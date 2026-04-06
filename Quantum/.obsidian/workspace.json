@@ -11,10 +11,14 @@
             "id": "ebbd6d806fad3e3b",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "03 Resources/Tutoriales/docker imagen.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Nueva pestaña"
+              "title": "docker imagen"
             }
           }
         ]
@@ -36,10 +40,11 @@
             "state": {
               "type": "file-explorer",
               "state": {
-                "sortOrder": "alphabetical"
+                "sortOrder": "alphabetical",
+                "autoReveal": false
               },
               "icon": "lucide-folder-closed",
-              "title": "Explorador de archivos"
+              "title": "Files"
             }
           },
           {
@@ -134,9 +139,14 @@
             "type": "leaf",
             "state": {
               "type": "outline",
-              "state": {},
+              "state": {
+                "file": "03 Resources/Tutoriales/docker imagen.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
               "icon": "lucide-list",
-              "title": "Esquema"
+              "title": "Outline of docker imagen"
             }
           },
           {
@@ -162,33 +172,41 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "canvas:Crear nuevo lienzo": false,
-      "switcher:Abrir selector rápido": false,
-      "graph:Abrir vista gráfica": false,
-      "daily-notes:Abrir la nota de hoy": false,
-      "templates:Insertar plantilla": false,
-      "command-palette:Abrir paleta de comandos": false,
-      "random-note:Abrir nota al azar": false
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "random-note:Open random note": false,
+      "bases:Create new base": false
     }
   },
   "active": "ebbd6d806fad3e3b",
   "lastOpenFiles": [
+    "03 Resources/Tutoriales/Design Thinking y Socratico.md",
+    "03 Resources/Tutoriales/Bullet journal.md",
+    "03 Resources/Discursos/Discurso Mezclado.md",
+    "03 Resources/Discursos/anio nuevo.md",
+    "Tutorial.md",
+    "Sin título 1.md",
+    "Sin título.canvas",
     "2024-12-26.md",
+    "2024-12-21.md",
+    "2024-12-19.md",
+    "5 discursos año nuevo.md",
+    "Images/Pasted image 20241107192644.png",
+    "Images/CREENCIAS DEL PATROCINADOR.png",
+    "03 Resources/Tutoriales/Design Thinking y Socratico",
     "03 Resources/Tutoriales/Sin título 1.canvas",
     "03 Resources/Tutoriales/docker imagen.md",
     "03 Resources/Tutoriales/Docker.md",
     "03 Resources/Tutoriales/Sin título.md",
-    "03 Resources/Discursos/anio nuevo.md",
     "03 Resources/Prompts/Estructurar Texto.md",
-    "03 Resources/Discursos/Discurso Mezclado.md",
     "03 Resources/Discursos/Sin título.md",
-    "5 discursos año nuevo.md",
     "03 Resources/Discursos nuevo año.md",
     "03 Resources/Discursos",
     "03 Resources/Prompts/Sin título 1.md",
-    "Tutorial.md",
-    "Sin título.canvas",
-    "2024-12-21.md",
     "03 Resources/Prompts",
     "03 Resources/Tutoriales/Sin título.canvas",
     "03 Resources/Tutoriales/uno - Git.md",
@@ -199,24 +217,17 @@
     "02 Areas/Desarrrollo Personal/Sin título 1.canvas",
     "02 Areas/Desarrrollo Personal/yuval.md",
     "02 Areas/Desarrrollo Personal/pensamiento critico.md",
-    "2024-12-19.md",
     "02 Areas/Desarrrollo Personal/Metodo PARA.md",
     "02 Areas/Desarrrollo Personal/1a expansion-desarrollo.md",
     "02 Areas/Desarrrollo Personal/Sin título.canvas",
-    "03 Resources/Tutoriales/Postgresql.md",
-    "02 Areas/Desarrrollo Personal/1C GUIA PRACTICA.md",
-    "02 Areas/Desarrrollo Personal/Pensamiento Crítico.md",
     "03 Resources/Templates",
     "Sin título 1.canvas",
-    "Images/Pasted image 20241107192644.png",
-    "Images/CREENCIAS DEL PATROCINADOR.png",
     "03 Resources/Pdfs",
     "02 Areas/Fisica/Salud Nutricion",
     "02 Areas/Fisica",
     "02 Areas/Desarrrollo Personal/PNL/Sin título.canvas",
     "03 Resources/Tutoriales",
     "Images",
-    "02 Areas/Desarrrollo Personal/PNL",
-    "01 Proyects/Programacion"
+    "02 Areas/Desarrrollo Personal/PNL"
   ]
 }
