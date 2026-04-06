@@ -1,0 +1,44 @@
+# .claude/rules/deploy.rules
+# Deploy rules for FlowTask Inc. Task Management Platform
+
+## Deploy Stack
+- Container registry: GitHub Container Registry (GHCR) — ghcr.io
+- CI/CD: GitHub Actions — .github/workflows/ci.yml
+- Server: Linux + Docker + docker-compose.prod.yml
+- Deploy: SSH via appleboy/ssh-action
+
+## Key files
+- Dockerfile — production-grade image with uv + non-root user
+- entrypoint.sh — Alembic migrations + seed + uvicorn (workers=1, SQLite single-writer)
+- docker-compose.yml — local development (build from source)
+- docker-compose.prod.yml — production (GHCR image, uses GHCR_IMAGE from .env)
+- .env.example — environment variables template
+- ready_to_deploy.md — full deployment manual
+
+## Critical rules
+1. NEVER commit .env — it is in .gitignore
+2. SECRET_KEY generated with secrets.token_hex(32) — minimum 32 bytes
+3. DATABASE_URL in production points to /data/ (persistent Docker volume)
+4. workers=1 in uvicorn — SQLite does not support concurrent writes
+5. ENVIRONMENT=production disables Swagger/ReDoc and enables cookie.secure=True
+6. The sqlite_data volume is NEVER deleted — it contains the entire database
+
+## CI/CD Flow
+push main → tests (uv run pytest) → docker build → push GHCR → SSH deploy → health check
+
+## Rollback
+Change GHCR_IMAGE in server .env to sha-XXXXXXX tag and do pull + up -d
+
+## Required GitHub Actions Secrets
+- SERVER_HOST — server IP or domain
+- SERVER_USER — SSH user
+- SERVER_SSH_KEY — SSH private key (ed25519 recommended)
+- SERVER_PORT — SSH port (default 22, optional)
+- GITHUB_TOKEN — automatic, do not configure
+
+## Production environment variables (see .env.example for full list)
+- SECRET_KEY (required)
+- DATABASE_URL (required, point to sqlite:////data/...)
+- GHCR_IMAGE (required on server)
+- ENVIRONMENT=production
+- CORS_ORIGINS (server IP/domain)

@@ -1,0 +1,169 @@
+# .claude/swarms/kaizen_improvement.yaml
+# Kaizen Continuous Improvement Swarm
+# Automatic continuous improvement
+
+swarm_name: "kaizen-continuous-improvement"
+version: "2.0"
+trigger: "on_repeated_error"
+
+description: |
+  Continuous improvement system that detects error patterns
+  and automatically generates rules to prevent them.
+
+  Kaizen (改善) = "continuous improvement" in Japanese.
+
+# Error detection configuration
+error_tracking:
+  threshold: 3  # Number of occurrences to trigger
+  window: "7 days"  # Time window
+  sources:
+    - ".claude/memory/audit_log.md"
+    - "Feedback from architect (rejections)"
+    - "Repeated test errors"
+
+# Types of detectable patterns
+detectable_patterns:
+  - type: "architecture_violation"
+    example: "Business logic in endpoints"
+
+  - type: "naming_convention"
+    example: "Use of generic names (data, temp, x)"
+
+  - type: "missing_validation"
+    example: "Lack of type hints"
+
+  - type: "security_issue"
+    example: "Hardcoded secrets"
+
+  - type: "testing_gap"
+    example: "Tests without assertions"
+
+# Participants
+participants:
+  - agent: "reviewer.agent"
+    phase: "analysis"
+    task: |
+      1. Analyze audit_log.md from last 7 days
+      2. Search for architect rejections
+      3. Identify errors that repeat 3+ times
+      4. Classify error pattern
+      5. Propose new preventive rule
+    output_to: "architect.agent"
+    analysis_focus:
+      - "Repeated rejections"
+      - "Same types of errors"
+      - "Same agents involved"
+
+  - agent: "architect.agent"
+    phase: "validation"
+    task: |
+      1. Validate proposed rule is correct
+      2. Verify it does not contradict existing rules
+      3. Evaluate impact of new rule
+      4. Approve or reject proposal
+    depends_on: "reviewer.agent"
+    validation_criteria:
+      - "Rule is specific and actionable"
+      - "Does not contradict existing rules"
+      - "Resolves detected pattern"
+
+# Detection flow
+detection_flow:
+  step_1:
+    action: "scan_audit_log"
+    parameters:
+      window: "7 days"
+      min_occurrences: 3
+
+  step_2:
+    action: "classify_pattern"
+    output: "pattern_type"
+
+  step_3:
+    action: "generate_rule_proposal"
+    template: |
+      ## AUTO-GENERATED RULE (Kaizen #{kaizen_id})
+
+      **Date**: {date}
+      **Detected pattern**: {pattern_description}
+      **Occurrences**: {count}
+
+      ### Problem
+      {problem_description}
+
+      ### Proposed Rule
+      {rule_text}
+
+      ### Example
+      BEFORE (caused the error):
+      {bad_example}
+
+      AFTER (correct):
+      {good_example}
+
+# Actions when pattern is detected
+on_pattern_detected:
+  - action: "notify_team"
+    message: "WARNING: Recurring error pattern detected"
+
+  - action: "generate_rule_proposal"
+    output: "proposal.md"
+
+  - action: "request_approval"
+    from: "architect.agent"
+
+  - action: "if_approved"
+    then:
+      - action: "add_to_rules"
+        target: "Appropriate .rules file"
+      - action: "register_decision"
+        target: "decision_log.json"
+      - action: "notify_team"
+        message: "New Kaizen rule applied"
+
+# Example generated rule
+example_kaizen_output:
+  pattern: "Use of print() in production code"
+  occurrences: 3
+  window: "last 5 days"
+  proposed_rule: |
+    ## KAIZEN RULE #1
+
+    ### In coder.agent
+
+    **Mandatory pre-validation**:
+    - Search for `print(` in generated code
+    - If found, replace with `logging`
+    - NEVER deliver code with print()
+
+    ### In rules
+
+    **New prohibition**:
+    FORBIDDEN: print() in production code
+    USE: logging.info(), logging.debug()
+
+# Metrics and reports
+metrics:
+  track:
+    - "kaizen_rules_generated"
+    - "patterns_detected"
+    - "patterns_resolved"
+    - "time_to_resolution"
+
+  weekly_report:
+    - "Patterns detected this week"
+    - "Rules generated"
+    - "Effectiveness (did errors decrease?)"
+
+# Learning configuration
+learning:
+  feedback_loop:
+    - "If error does NOT repeat → rule effective"
+    - "If error REPEATS → refine rule"
+    - "After 30 days without error → archive pattern"
+
+  rule_lifecycle:
+    proposed: "Awaiting approval"
+    active: "Being applied in reviews"
+    effective: "Demonstrated error reduction"
+    archived: "Problem no longer occurs"

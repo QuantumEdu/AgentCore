@@ -1,0 +1,207 @@
+# .claude/swarms/discovery_swarm.yaml
+# ========================================
+# Swarm for discovery and initial consultation process
+# ========================================
+
+swarm_name: "discovery-and-consultation"
+version: "1.0"
+strategy: "sequential"
+
+description: |
+  Complete discovery process for new projects.
+  Interviews user, defines technology stack, documents decisions,
+  and generates base project configuration.
+
+# Context that all agents consult
+memory_context:
+  - ".claude/rules/discovery.rules"
+  - ".claude/skills/tech-interview-tree/"
+  - "stack_config.json (if exists)"
+  - "decision_log.json (if exists)"
+
+# Participants in execution order
+participants:
+  - agent: "consultant.agent"
+    phase: "interview"
+    task: |
+      1. Conduct initial interview with user
+      2. Ask the 14 mandatory discovery.rules questions
+      3. Document user responses
+      4. Identify functional and non-functional requirements
+      5. Detect constraints (timeline, budget, skills)
+    output_to: "architect.agent"
+    artifacts_generated:
+      - "requirements.md (temporary)"
+      - "interview_notes.md (temporary)"
+    timeout_minutes: 60  # Interview can be long
+
+  - agent: "architect.agent"
+    phase: "tech_analysis"
+    task: |
+      1. Analyze requirements from consultant
+      2. Use tech-interview-tree for decisions:
+         - database_decision.md (SQLite vs PostgreSQL)
+         - frontend_decision.md (SSR vs SPA)
+         - scale_analysis.md (evaluate scalability)
+      3. Propose technology stack
+      4. Identify alternatives considered
+      5. Document rationale for each decision
+    depends_on: "consultant.agent"
+    output_to: "consultant.agent"
+    artifacts_generated:
+      - "stack_proposal.md (temporary)"
+
+  - agent: "consultant.agent"
+    phase: "documentation"
+    task: |
+      1. Consolidate technical proposal
+      2. Create/update decision_log.json with decisions
+      3. Create/update stack_config.json
+      4. Generate technical proposal in markdown
+      5. Prepare user presentation
+    depends_on: "architect.agent"
+    output_to: "user_approval"
+    artifacts_generated:
+      - "decision_log.json"
+      - "stack_config.json"
+      - "technical_proposal.md"
+      - ".claude/memory/audit_log.md (update)"
+
+  - agent: "user_approval"
+    phase: "validation"
+    task: |
+      PAUSE SWARM FOR USER APPROVAL
+
+      Present:
+      1. Proposed stack with rationale
+      2. Alternatives considered and why discarded
+      3. Identified risks and mitigations
+      4. Next steps if approved
+
+      Wait for:
+      - Explicit user approval
+      - Required modifications
+      - Rejection and new iteration
+    depends_on: "consultant.agent"
+    output_to: "pm_orchestrator.agent"
+    manual_approval_required: true
+
+  - agent: "pm_orchestrator.agent"
+    phase: "planning"
+    task: |
+      1. Read approved decisions from decision_log.json
+      2. Create initial roadmap.md with milestones
+      3. Decompose project into user stories
+      4. Estimate story points
+      5. Create first sprint backlog
+      6. Assign tasks to appropriate agents
+    depends_on: "user_approval"
+    artifacts_generated:
+      - ".claude/memory/backlog/roadmap.md"
+      - ".claude/memory/backlog/sprint_01.md"
+
+# Quality gates — mandatory validations
+quality_gates:
+  - name: "requirements_documented"
+    condition: "interview_notes.md exists and has >= 10 answers"
+    on_fail:
+      action: "return_to_agent"
+      agent: "consultant.agent"
+      feedback: "Incomplete interview, continue with questions"
+
+  - name: "decision_log_created"
+    condition: "decision_log.json exists with at least 1 decision"
+    on_fail:
+      action: "return_to_agent"
+      agent: "consultant.agent"
+      feedback: "Create decision_log.json with documented decisions"
+
+  - name: "stack_config_valid"
+    condition: "stack_config.json has backend, database, frontend defined"
+    on_fail:
+      action: "return_to_agent"
+      agent: "architect.agent"
+      feedback: "stack_config.json incomplete"
+
+  - name: "user_approved"
+    condition: "user_approval == true"
+    on_fail:
+      action: "restart_from"
+      agent: "consultant.agent"
+      feedback: "User rejected proposal, iterate"
+
+# Limits and timeouts
+iteration_limits:
+  max_iterations: 3
+  on_max_iterations:
+    action: "escalate_to_user"
+    message: "Discovery cycle exceeded 3 iterations, review requirements"
+
+# Actions on successful completion
+on_success:
+  - action: "update_audit_log"
+    details: "Record discovery phase completion"
+  - action: "move_artifacts"
+    from: "temp/*.md"
+    to: ".claude/memory/discovery/"
+  - action: "notify"
+    target: "pm_orchestrator"
+    message: "Discovery completed, project ready for development"
+  - action: "trigger_swarm"
+    swarm: "agile-development-cycle"
+
+# Expected final artifacts
+expected_artifacts:
+  - path: "decision_log.json"
+    required: true
+    validation: "At least 1 decision documented"
+
+  - path: "stack_config.json"
+    required: true
+    validation: "backend, database, frontend defined"
+
+  - path: "technical_proposal.md"
+    required: true
+    validation: "Contains stack, rationale, next steps"
+
+  - path: ".claude/memory/backlog/roadmap.md"
+    required: true
+    validation: "At least 1 milestone defined"
+
+# Optional hooks
+hooks:
+  pre_swarm:
+    - "Verify .claude/ exists"
+    - "Create memory/discovery/ directory if not exists"
+
+  post_swarm:
+    - "Generate executive summary of discovery"
+    - "Backup decision_log.json"
+
+  on_user_rejection:
+    - "Document rejection reasons"
+    - "Iterate with new context"
+
+# Usage notes
+notes: |
+  This swarm is executed:
+  - At the start of a new project
+  - When there is significant requirement change
+  - Before a major technology pivot
+
+  Typical duration: 2-4 hours (includes user time)
+
+  Key outputs:
+  - decision_log.json: Architectural decisions
+  - stack_config.json: Technology configuration
+  - roadmap.md: Implementation plan
+
+---
+
+# USAGE EXAMPLE
+
+# Start discovery for new project
+# claude swarm run discovery-and-consultation
+
+# Continue discovery after user feedback
+# claude swarm run discovery-and-consultation --resume --phase=tech_analysis

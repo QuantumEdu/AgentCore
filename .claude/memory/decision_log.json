@@ -1,0 +1,90 @@
+{
+    "_filepath": ".claude/memory/decision_log.json",
+    "project_name": "FlowTask Inc. - Task Management Platform",
+    "created_date": "2026-04-05",
+    "decisions": [
+        {
+            "id": 1,
+            "timestamp": "2026-04-05T20:00:00Z",
+            "category": "database",
+            "context": "SaaS system for small team, < 10 concurrent users, initial version, local deployment",
+            "decision": "Use SQLite as database for this version",
+            "alternatives_considered": [
+                "PostgreSQL (Supabase) - rejected: unnecessary for this version",
+                "PostgreSQL self-hosted - rejected: infrastructure complexity"
+            ],
+            "rationale": "SQLite sufficient for low concurrency, zero configuration, portable, simple to back up",
+            "decided_by": "user",
+            "affected_modules": ["database", "deployment"]
+        },
+        {
+            "id": 2,
+            "timestamp": "2026-04-05T20:00:00Z",
+            "category": "naming",
+            "context": "Team is English-speaking, API consumed by English-speaking developers",
+            "decision": "Tables in English snake_case WITHOUT prefix: users, projects, tasks, subtasks, activity_logs, sprints, event_logs",
+            "alternatives_considered": [
+                "Spanish names - rejected: team and domain are English-speaking",
+                "Table prefix (ft_) - rejected: unnecessary in a dedicated database"
+            ],
+            "rationale": "English names align with team language, no prefix needed for dedicated database",
+            "decided_by": "user",
+            "affected_modules": ["database", "domain"]
+        },
+        {
+            "id": 3,
+            "timestamp": "2026-04-05T20:00:00Z",
+            "category": "domain",
+            "context": "User profile needs support for remote teams across time zones",
+            "decision": "Include expanded user fields: full_name, email, avatar_url, timezone, last_seen_at",
+            "alternatives_considered": [
+                "Only basic fields (name, email) - rejected: insufficient for remote team UX"
+            ],
+            "rationale": "Expanded profile supports timezone-aware features and last-seen presence indicators",
+            "decided_by": "user",
+            "affected_modules": ["domain", "schemas", "api"]
+        },
+        {
+            "id": 4,
+            "timestamp": "2026-04-05T20:00:00Z",
+            "category": "domain",
+            "context": "Task management requires flexible categorization for different work types",
+            "decision": "Expand TaskCategory enum to: FEATURE, BUG, CHORE, DOCS, TEST, INFRA, DESIGN, OTHER",
+            "alternatives_considered": [
+                "Only 3 types (FEATURE, BUG, OTHER) - rejected: too coarse for planning and reporting",
+                "Free-text category - rejected: inconsistent data, hard to filter"
+            ],
+            "rationale": "8 categories provide meaningful grouping for sprint planning and velocity tracking without excessive granularity",
+            "decided_by": "user",
+            "affected_modules": ["domain", "schemas"]
+        },
+        {
+            "id": 5,
+            "timestamp": "2026-04-05T20:00:00Z",
+            "category": "terminology",
+            "context": "Budget tracking requires clear and unambiguous financial terminology",
+            "decision": "Use terminology: budget_used (consumed), budget_allocated (assigned), budget_remaining (balance)",
+            "alternatives_considered": [
+                "debit/credit/balance - rejected: less intuitive for non-finance developers",
+                "spent/available - rejected: ambiguous for budget_allocation vs remaining distinction"
+            ],
+            "rationale": "budget_ prefix makes all financial fields immediately identifiable; used/allocated/remaining are self-explanatory",
+            "decided_by": "user",
+            "affected_modules": ["domain", "schemas", "api", "templates"]
+        },
+        {
+            "id": 6,
+            "timestamp": "2026-04-05T20:00:00Z",
+            "category": "business_logic",
+            "context": "Budget allocation is an upfront assignment of funds to a project",
+            "decision": "Budget allocation is stored as a field in the projects table AND recorded as an entry in activity_logs (append-only audit trail)",
+            "alternatives_considered": [
+                "Only field in projects - rejected: no audit trail of budget changes",
+                "Only in activity_logs - rejected: no fast reference on the project itself"
+            ],
+            "rationale": "Dual registration: project field for fast read + activity_log entry for full auditability and budget history reconstruction",
+            "decided_by": "user",
+            "affected_modules": ["domain", "services", "api"]
+        }
+    ]
+}

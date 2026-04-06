@@ -1,0 +1,190 @@
+{
+    "_filepath": ".claude/stack_config.json",
+    "_metadata": {
+        "version": "1.3",
+        "description": "Tech stack configuration — READ BEFORE IMPLEMENTING",
+        "last_updated": "2026-04-05",
+        "mandatory_read": true
+    },
+    "_instructions": {
+        "before_coding": [
+            "1. Read MANDATORY_CHECKS.md",
+            "2. Verify dependency compatibility",
+            "3. Use EXACTLY the tools specified here",
+            "4. DO NOT substitute without explicit approval"
+        ],
+        "forbidden_substitutions": [
+            "bcrypt instead of argon2id",
+            "pip instead of uv",
+            "requests instead of httpx",
+            "mysql-connector instead of aiosqlite"
+        ]
+    },
+    "project": {
+        "name": "FlowTask Inc. - Task Management Platform",
+        "type": "Transactional SaaS backend",
+        "scale": "small",
+        "description": "Task management system for projects, sprints, activity tracking, and budget allocation for FlowTask Inc."
+    },
+    "tools": {
+        "package_manager": {
+            "name": "uv",
+            "rationale": "Faster than pip, better dependency resolution",
+            "commands": {
+                "install": "uv sync",
+                "add": "uv add {package}",
+                "remove": "uv remove {package}",
+                "lock": "uv lock"
+            },
+            "alternatives_rejected": ["pip", "poetry"],
+            "rejection_reason": "uv is the modern standard for Python 2024+"
+        },
+        "python_version": {
+            "minimum": "3.12",
+            "recommended": "3.12",
+            "maximum": "3.13",
+            "compatibility_notes": "Avoid 3.14 beta due to incompatibilities with some libs"
+        }
+    },
+    "backend": {
+        "framework": "FastAPI",
+        "version": "0.100+",
+        "async_support": true,
+        "server": {
+            "dev": "uvicorn app.main:app --reload",
+            "prod": "uvicorn app.main:app --workers 4"
+        }
+    },
+    "database": {
+        "type": "SQLite",
+        "orm": "SQLAlchemy 2.0",
+        "async_driver": "aiosqlite",
+        "migrations": "Alembic",
+        "connection_pool": false,
+        "naming_convention": {
+            "tables": "snake_case plural English (users, projects, tasks, sprints)",
+            "columns": "snake_case (full_name, created_at, due_date)",
+            "foreign_keys": "{table_singular}_id (user_id, project_id, task_id)",
+            "money_fields": "ALWAYS Numeric(10, 2), NEVER Float"
+        },
+        "tables": [
+            "users",
+            "projects",
+            "subtasks",
+            "tasks",
+            "activity_logs",
+            "sprints",
+            "event_logs"
+        ],
+        "enums": {
+            "project_status": ["ACTIVE", "COMPLETED", "ARCHIVED", "ON_HOLD"],
+            "project_type": ["INTERNAL", "CLIENT", "RESEARCH", "MAINTENANCE"],
+            "task_category": ["FEATURE", "BUG", "CHORE", "DOCS", "TEST", "INFRA", "DESIGN", "OTHER"],
+            "user_role": ["ADMIN", "MEMBER", "VIEWER"]
+        },
+        "terminology": {
+            "ledger": "activity_logs",
+            "projects": "projects",
+            "tasks": "tasks",
+            "sprints": "sprints",
+            "event_log": "event_logs",
+            "debit": "budget_used (budget consumed / charged)",
+            "credit": "budget_allocated (budget assigned / reserved)",
+            "balance": "budget_remaining"
+        }
+    },
+    "frontend": {
+        "type": "SSR",
+        "engine": "Jinja2",
+        "css_framework": "PicoCSS",
+        "javascript": "vanilla"
+    },
+    "auth": {
+        "enabled": true,
+        "method": "JWT",
+        "password_hash": {
+            "algorithm": "argon2id",
+            "package": "argon2-cffi",
+            "rationale": "PHC winner, resistant to GPU/ASIC attacks",
+            "FORBIDDEN": ["bcrypt", "md5", "sha1", "sha256"],
+            "forbidden_reason": "bcrypt incompatible Python 3.14, others are insecure"
+        },
+        "jwt_library": "python-jose[cryptography]",
+        "token_expiry_minutes": 60,
+        "refresh_token_days": 7,
+        "roles": {
+            "ADMIN": "Full system control — manage users, projects, sprints, budgets",
+            "MEMBER": "Create and update tasks within assigned projects",
+            "VIEWER": "Read-only access to projects, tasks, and activity logs"
+        }
+    },
+    "security": {
+        "cors": {
+            "enabled": true,
+            "allow_origins": ["http://localhost:8000"],
+            "allow_credentials": true
+        },
+        "rate_limiting": {
+            "enabled": true,
+            "library": "slowapi",
+            "login_limit": "5/minute"
+        },
+        "headers": {
+            "x_frame_options": "DENY",
+            "x_content_type_options": "nosniff",
+            "strict_transport_security": true
+        }
+    },
+    "testing": {
+        "framework": "pytest",
+        "async_support": "pytest-asyncio",
+        "coverage_minimum": 80,
+        "fixtures": "conftest.py"
+    },
+    "optional_modules": {
+        "email": {
+            "enabled": false,
+            "library": "fastapi-mail"
+        },
+        "background_tasks": {
+            "enabled": false,
+            "library": "celery|arq"
+        },
+        "cache": {
+            "enabled": false,
+            "library": "redis|memcached"
+        },
+        "file_upload": {
+            "enabled": false,
+            "storage": "local|s3"
+        },
+        "excel_export": {
+            "enabled": true,
+            "library": "openpyxl"
+        },
+        "api_docs": {
+            "enabled": true,
+            "swagger": "/docs",
+            "redoc": "/redoc"
+        }
+    },
+    "deployment": {
+        "target": "local",
+        "containerized": false,
+        "docker_compose": false,
+        "ci_cd": false
+    },
+    "code_quality": {
+        "linter": "ruff",
+        "formatter": "ruff format",
+        "type_checker": "mypy",
+        "pre_commit": true
+    },
+    "business_rules": {
+        "append_only_tables": ["activity_logs", "event_logs"],
+        "immutable_after_close": ["sprints"],
+        "soft_delete": "All models use deleted_at, NEVER hard delete",
+        "idempotency": "Critical endpoints require unique request_id",
+        "budget_allocation": "Stored as field on project AND recorded as entry in activity_logs"
+    }
+}

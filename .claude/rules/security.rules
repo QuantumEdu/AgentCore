@@ -1,0 +1,487 @@
+# .claude/rules/security.rules
+# Security Rules - FlowTask Inc.
+# JWT + Argon2id + Role-based Access Control
+
+## 1. AUTHENTICATION
+
+### Security stack:
+- **Hashing**: Argon2id (NOT bcrypt — incompatible Python 3.14)
+- **Tokens**: JWT (JSON Web Tokens)
+- **Sessions**: Stateless (no server-side sessions)
+- **Frontend**: HttpOnly cookies for tokens
+
+### Hashing implementation (MANDATORY):
+```python
+# app/core/security.py
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+
+ph = PasswordHasher(
+    time_cost=2,        # Iterations
+    memory_cost=65536,  # 64 MB
+    parallelism=1,      # Threads
+    hash_len=32,        # Hash length
+    salt_len=16         # Salt length
+)
+
+def hash_password(password: str) -> str:
+    """
+    Hash password with Argon2id.
+    NEVER store passwords in plain text.
+    """
+    return ph.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verify password against hash.
+    """
+    try:
+        ph.verify(hashed_password, plain_password)
+
+        # Rehash if parameters changed
+        if ph.check_needs_rehash(hashed_password):
+            return hash_password(plain_password)
+
+        return True
+    except VerifyMismatchError:
+        return False
+```
+
+### Password rules:
+- Minimum 8 characters
+- At least 1 uppercase, 1 lowercase, 1 number
+- Special characters recommended
+- DO NOT store passwords in plain text
+- DO NOT use MD5, SHA1, or bcrypt
+- ALWAYS use Argon2id
+
+## 2. JWT (JSON WEB TOKENS)
+
+### Configuration:
+```python
+# app/core/security.py
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from app.config import settings
+
+SECRET_KEY = settings.SECRET_KEY  # 32+ random characters
+ALGORITHM = "HS256"               # HMAC with SHA-256
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
+
+def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
+    """
+    Create JWT token with custom claims.
+    """
+    to_encode = data.copy()
+
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode.update({
+        "exp": expire,            # Expiration
+        "iat": datetime.utcnow(), # Issued at
+        "sub": str(data["sub"])   # Subject (user_id)
+    })
+
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_token(token: str) -> dict:
+    """
+    Verify and decode JWT token.
+    Raises JWTError if invalid/expired.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise UnauthorizedException("Invalid or expired token")
+```
+
+### Mandatory JWT claims:
+```python
+{
+    "sub": "user_id",            # Subject (user ID)
+    "email": "user@example.com", # User email
+    "role": "admin",             # User role
+    "exp": 1234567890,           # Expiration (Unix timestamp)
+    "iat": 1234567890            # Issued at (Unix timestamp)
+}
+```
+
+### Token rules:
+- Expiration: 60 minutes (adjustable based on risk)
+- Refresh tokens: 7 days (implement if needed)
+- NO tokens without expiration
+- DO NOT include sensitive information (passwords, personal data)
+- Invalidate tokens on logout (blacklist if needed)
+
+## 3. AUTHORIZATION (RBAC)
+
+### System roles (FlowTask Inc.):
+```python
+# app/domain/enums.py
+from enum import Enum
+
+class UserRole(str, Enum):
+    ADMIN = "admin"    # Full system control — users, projects, sprints, budgets
+    MEMBER = "member"  # Create and update tasks within assigned projects
+    VIEWER = "viewer"  # Read-only access to projects, tasks, and activity logs
+```
+
+### Permission matrix:
+
+| Module | Admin | Member | Viewer |
+|--------|-------|--------|--------|
+| Users | CRUD | - | - |
+| Projects | CRUD | CR | R |
+| Subtasks (catalog) | CRUD | R | R |
+| Tasks | CRUD | CR | R |
+| Activity Logs (budget) | CRUD | R | R |
+| Sprints | CRUD | R | R |
+| Reports | R | R | R |
+
+**Legend**: C=Create, R=Read, U=Update, D=Delete
+
+### Dependency implementation:
+```python
+# app/core/dependencies.py
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError
+from sqlalchemy.orm import Session
+
+from app.core.security import verify_token
+from app.database import get_db
+from app.domain.models import User
+from app.domain.enums import UserRole
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> User:
+    """
+    Extract current user from JWT token.
+    """
+    try:
+        payload = verify_token(token)
+        user_id = payload.get("sub")
+
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
+
+        user = db.query(User).filter(
+            User.id == user_id,
+            User.deleted_at.is_(None)
+        ).first()
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+
+        return user
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+
+def require_role(*allowed_roles: str):
+    """
+    Dependency to require specific roles.
+
+    Usage:
+    @router.post("/", dependencies=[Depends(require_role("admin", "member"))])
+    """
+    async def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires role: {', '.join(allowed_roles)}"
+            )
+        return current_user
+
+    return role_checker
+```
+
+### Usage in endpoints:
+```python
+from fastapi import APIRouter, Depends
+from app.core.dependencies import require_role, get_current_user
+
+router = APIRouter(prefix="/projects", tags=["projects"])
+
+# Only admin and member can create projects
+@router.post("/", dependencies=[Depends(require_role("admin", "member"))])
+async def create_project(...):
+    pass
+
+# All authenticated users can view projects
+@router.get("/")
+async def list_projects(current_user = Depends(get_current_user)):
+    pass
+
+# Only admin can delete projects
+@router.delete("/{project_id}", dependencies=[Depends(require_role("admin"))])
+async def delete_project(...):
+    pass
+
+# Only admin can manage activity logs (budget)
+@router.post("/activity-logs", dependencies=[Depends(require_role("admin"))])
+async def create_activity_log(...):
+    pass
+```
+
+## 4. INPUT VALIDATION
+
+### Mandatory rules:
+- ALWAYS validate with Pydantic schemas
+- Sanitize inputs (XSS, SQL injection)
+- String length limits
+- Validate data types
+- DO NOT trust client inputs
+
+### Schemas with validation:
+```python
+from pydantic import BaseModel, Field, EmailStr, validator
+import re
+
+class UserCreate(BaseModel):
+    email: EmailStr = Field(..., max_length=255)
+    password: str = Field(..., min_length=8, max_length=100)
+    full_name: str = Field(..., min_length=1, max_length=200)
+    role: UserRole  # admin, member, viewer
+
+    @validator('password')
+    def validate_password(cls, v):
+        """
+        Validate password complexity.
+        """
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Must contain at least one lowercase letter')
+        if not re.search(r'\d', v):
+            raise ValueError('Must contain at least one number')
+        return v
+
+    @validator('full_name')
+    def sanitize_full_name(cls, v):
+        """
+        Sanitize text input.
+        """
+        return v.strip()
+```
+
+## 5. PROTECTION AGAINST ATTACKS
+
+### SQL Injection:
+```python
+# NEVER do this
+query = f"SELECT * FROM users WHERE full_name = '{name}'"
+db.execute(query)
+
+# ALWAYS use ORM or parameters
+users = db.query(User).filter(User.full_name == name).all()
+```
+
+### XSS (Cross-Site Scripting):
+```python
+# In Jinja2 templates, automatically escaped
+# Jinja2 escapes HTML by default
+{{ user.full_name }}  # Safe
+
+# DO NOT use |safe unless TRULY trusted HTML
+{{ content|safe }}  # DANGEROUS
+```
+
+### CSRF (Cross-Site Request Forgery):
+- Cookies with `SameSite=Lax` or `Strict`
+- Validate `Origin` and `Referer` headers
+- CSRF tokens in web forms
+
+### Rate Limiting:
+```python
+# Use slowapi or similar
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
+@app.post("/api/v1/auth/login")
+@limiter.limit("5/minute")  # Maximum 5 attempts per minute
+async def login(...):
+    pass
+```
+
+## 6. SECURE CONFIGURATION
+
+### Environment variables (.env):
+```bash
+# NEVER commit to git
+# Add .env to .gitignore
+
+# Secrets
+SECRET_KEY=your-secret-key-min-32-chars-random  # Random, 32+ characters
+DATABASE_URL=sqlite:///./flowtask.db
+
+# JWT
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+ALGORITHM=HS256
+
+# CORS (only trusted domains)
+ALLOWED_ORIGINS=http://localhost:8000
+```
+
+### Config with Pydantic:
+```python
+# app/config.py
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    SECRET_KEY: str  # Required, fails if missing
+    DATABASE_URL: str = "sqlite:///./flowtask.db"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ALGORITHM: str = "HS256"
+
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+settings = Settings()
+
+# Validate SECRET_KEY on startup
+if len(settings.SECRET_KEY) < 32:
+    raise ValueError("SECRET_KEY must have at least 32 characters")
+```
+
+## 7. CORS (Cross-Origin Resource Sharing)
+
+### Restrictive configuration:
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8000",  # Development
+    ],
+    allow_credentials=True,  # Cookies
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
+)
+
+# NEVER in production:
+# allow_origins=["*"]  # INSECURE
+```
+
+## 8. LOGGING AND AUDIT
+
+### Security logs:
+```python
+import logging
+
+logger = logging.getLogger("security")
+
+# Successful login
+logger.info(f"Login successful: {user.email} from {request.client.host}")
+
+# Failed login
+logger.warning(f"Login failed: {email} from {request.client.host}")
+
+# Password change
+logger.info(f"Password changed: user_id={user.id}")
+
+# Access denied
+logger.warning(f"Access denied: {user.email} attempted {request.method} {request.url}")
+```
+
+### Database audit:
+```python
+# event_logs table (append-only, NEVER UPDATE/DELETE)
+class EventLog(Base):
+    __tablename__ = "event_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    entity: Mapped[str] = mapped_column(String(50))       # "project", "task", "activity_log"
+    entity_id: Mapped[int] = mapped_column(Integer)
+    event: Mapped[str] = mapped_column(String(50))        # "CREATED", "COMPLETED", "TASK_ASSIGNED"
+    payload: Mapped[str] = mapped_column(Text, nullable=True)  # JSON with details
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
+```
+
+## 9. SECURITY HEADERS
+
+### Recommended configuration:
+```python
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+
+# Only trusted hosts
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["localhost"]
+)
+
+# HTTPS in production
+if settings.ENVIRONMENT == "production":
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+# Security headers
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+```
+
+## 10. SECURITY CHECKLIST
+
+Before approving code:
+
+### Authentication:
+- [ ] Using Argon2id for hashing? → OK
+- [ ] JWT with configured expiration? → OK
+- [ ] SECRET_KEY of 32+ characters? → OK
+- [ ] Passwords with complexity validation? → OK
+
+### Authorization:
+- [ ] Endpoints protected with require_role? → OK
+- [ ] Permission matrix respected (ADMIN/MEMBER/VIEWER)? → OK
+- [ ] User CANNOT access other users' data? → OK
+- [ ] Append-only tables protected against UPDATE/DELETE? → OK
+
+### Validation:
+- [ ] All inputs validated with Pydantic? → OK
+- [ ] Queries use ORM (not raw SQL)? → OK
+- [ ] Length limits defined? → OK
+
+### Configuration:
+- [ ] .env in .gitignore? → OK
+- [ ] Restrictive CORS? → OK
+- [ ] Security headers configured? → OK
+- [ ] Rate limiting on login? → OK
+
+### Logging:
+- [ ] Login failures logged? → OK
+- [ ] Sensitive changes audited in event_logs? → OK
+
+---
+
+**Version**: 1.3
+**Last updated**: 2026-04-05
+**Project**: FlowTask Inc.
+**Stack**: JWT + Argon2id + FastAPI

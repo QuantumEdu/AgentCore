@@ -1,0 +1,471 @@
+# .claude/rules/database.rules
+# Database Rules - FlowTask Inc.
+# SQLAlchemy 2.0 + SQLite
+
+## 1. DATABASE CONFIGURATION
+
+### Defined stack:
+- **DB**: SQLite (development and production)
+- **ORM**: SQLAlchemy 2.0 with mapped_column
+- **Migrations**: Alembic
+- **Python**: 3.12+ (compatible with 3.13)
+
+### Naming conventions:
+- **Tables**: snake_case, plural English WITHOUT prefix (e.g. `users`, `projects`, `tasks`, `subtasks`, `activity_logs`, `sprints`, `event_logs`)
+- **Columns**: snake_case (e.g. `full_name`, `due_date`, `budget_used`)
+- **Foreign Keys**: `{table_singular}_id` (e.g. `user_id`, `project_id`, `task_id`)
+- **Indexes**: `ix_{table}_{column}` (e.g. `ix_projects_name`)
+- **Constraints**: `{type}_{table}_{column}` (e.g. `uq_projects_owner_name`)
+
+## 2. MANDATORY MODELS
+
+### Base template (ALWAYS USE):
+```python
+from datetime import datetime
+from typing import Optional
+from sqlalchemy import Integer, String, DateTime, Boolean, Numeric, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.database import Base
+
+class MyModel(Base):
+    __tablename__ = "my_table"
+
+    # === MANDATORY FIELDS (ALL MODELS) ===
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # === MODEL FIELDS ===
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+```
+
+### Mandatory fields (non-negotiable):
+1. `id` - Autoincrement primary key
+2. `created_at` - Creation timestamp
+3. `updated_at` - Last modification timestamp
+4. `deleted_at` - For soft delete (always nullable)
+
+### Domain models:
+
+```python
+# --- User ---
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    full_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    timezone: Mapped[str] = mapped_column(String(50), nullable=False, default="UTC")
+    last_seen_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Relationships
+    projects: Mapped[list["Project"]] = relationship("Project", back_populates="owner")
+
+
+# --- Project ---
+class Project(Base):
+    __tablename__ = "projects"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    status: Mapped[str] = mapped_column(Enum("ACTIVE", "COMPLETED", "ARCHIVED", "ON_HOLD", name="project_status"), nullable=False, default="ACTIVE")
+    project_type: Mapped[str] = mapped_column(Enum("INTERNAL", "CLIENT", "RESEARCH", "MAINTENANCE", name="project_type"), nullable=False)
+    budget_allocation: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+
+    # Relationships
+    owner: Mapped["User"] = relationship("User", back_populates="projects")
+    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="project")
+
+
+# --- Subtask (catalog of reusable work items) ---
+class Subtask(Base):
+    __tablename__ = "subtasks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    category: Mapped[str] = mapped_column(Enum("FEATURE", "BUG", "CHORE", "DOCS", "TEST", "INFRA", "DESIGN", "OTHER", name="task_category"), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    estimated_hours: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    story_points: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    # Relationships
+    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="subtask")
+
+
+# --- Task (work item assigned to a project) ---
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    project_id: Mapped[int] = mapped_column(Integer, ForeignKey("projects.id"), nullable=False)
+    subtask_id: Mapped[int] = mapped_column(Integer, ForeignKey("subtasks.id"), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    assigned_to: Mapped[str] = mapped_column(String(100), nullable=False)
+    due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Relationships
+    project: Mapped["Project"] = relationship("Project", back_populates="tasks")
+    subtask: Mapped["Subtask"] = relationship("Subtask", back_populates="tasks")
+
+
+# --- ActivityLog (APPEND-ONLY, budget ledger) ---
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    # WITHOUT updated_at or deleted_at: APPEND-ONLY, never modified or deleted
+
+    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    project_id: Mapped[int] = mapped_column(Integer, ForeignKey("projects.id"), nullable=False)
+    description: Mapped[str] = mapped_column(String(300), nullable=False)
+    budget_used: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+    budget_allocated: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+
+
+# --- Sprint (immutable once closed) ---
+class Sprint(Base):
+    __tablename__ = "sprints"
+
+    name: Mapped[str] = mapped_column(String(100), primary_key=True)  # e.g. "2026-Q2-S1" as PK
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    # WITHOUT updated_at or deleted_at: immutable once closed
+
+    total_budget_used: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    total_budget_allocated: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    budget_remaining: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    integrity_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    closed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+
+# --- EventLog (APPEND-ONLY, audit trail) ---
+class EventLog(Base):
+    __tablename__ = "event_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    # WITHOUT updated_at or deleted_at: APPEND-ONLY, never modified or deleted
+
+    entity: Mapped[str] = mapped_column(String(100), nullable=False)
+    entity_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    event: Mapped[str] = mapped_column(String(100), nullable=False)
+    payload: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Serialized JSON
+```
+
+## 3. DATA TYPES
+
+### SQLite + SQLAlchemy mapping:
+
+```python
+# Strings
+name: Mapped[str] = mapped_column(String(200))     # Fixed length
+description: Mapped[Optional[str]] = mapped_column(Text)  # Long text
+
+# Numbers
+quantity: Mapped[int] = mapped_column(Integer)
+budget: Mapped[float] = mapped_column(Numeric(10, 2))  # ALWAYS Numeric for money
+
+# Booleans
+is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+# Dates
+due_date: Mapped[datetime] = mapped_column(DateTime)
+optional_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+# Enums
+from app.domain.enums import ProjectStatus
+status: Mapped[ProjectStatus] = mapped_column(Enum(ProjectStatus))
+```
+
+### Type rules:
+- Money: ALWAYS `Numeric(10, 2)`, NEVER Float
+- Strings: Specify maximum length with String(N)
+- Long text: Use `Text` without limit
+- Dates: Use `DateTime`, not Date or Time separately
+- Enums: Define in `app/domain/enums.py` and use Enum()
+
+## 4. FOREIGN KEYS AND RELATIONSHIPS
+
+### Relationship User -> Projects (1:N):
+```python
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    full_name: Mapped[str] = mapped_column(String(200))
+    projects: Mapped[list["Project"]] = relationship("Project", back_populates="owner")
+
+class Project(Base):
+    __tablename__ = "projects"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    owner_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    owner: Mapped["User"] = relationship("User", back_populates="projects")
+```
+
+### Relationship Project -> Tasks (1:N):
+```python
+class Project(Base):
+    __tablename__ = "projects"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tasks: Mapped[list["Task"]] = relationship("Task", back_populates="project")
+
+class Task(Base):
+    __tablename__ = "tasks"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    project_id: Mapped[int] = mapped_column(Integer, ForeignKey("projects.id"), nullable=False)
+    subtask_id: Mapped[int] = mapped_column(Integer, ForeignKey("subtasks.id"), nullable=False)
+    project: Mapped["Project"] = relationship("Project", back_populates="tasks")
+    subtask: Mapped["Subtask"] = relationship("Subtask", back_populates="tasks")
+```
+
+### Relationship rules:
+- ALWAYS use `back_populates` (bidirectional)
+- Foreign keys named `{table_singular}_id`
+- Use `ForeignKey("table.id")`, never without table
+- Relationships with `Mapped[list["Model"]]` for 1:N
+- Relationships with `Mapped["Model"]` for N:1
+- DO NOT use `backref` (deprecated in SQLAlchemy 2.0)
+
+## 5. CONSTRAINTS AND VALIDATIONS
+
+### Unique constraints:
+```python
+name: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
+
+from sqlalchemy import UniqueConstraint
+
+class Project(Base):
+    __tablename__ = "projects"
+    __table_args__ = (
+        UniqueConstraint('owner_id', 'name', name='uq_project_owner_name'),
+    )
+```
+
+### Check constraints:
+```python
+from sqlalchemy import CheckConstraint
+
+class Subtask(Base):
+    __tablename__ = "subtasks"
+    estimated_hours: Mapped[float] = mapped_column(Numeric(10, 2))
+    __table_args__ = (
+        CheckConstraint('estimated_hours > 0', name='ck_subtask_hours_positive'),
+        CheckConstraint('story_points >= 1', name='ck_subtask_points_min_one'),
+    )
+```
+
+### Nullable vs NOT NULL:
+- Default: `nullable=False` (required)
+- If optional: `Mapped[Optional[type]]` + `nullable=True`
+- Foreign keys: `nullable=False` (unless special cases)
+- Soft delete: ALWAYS `nullable=True`
+
+## 6. INDEXES
+
+### When to create indexes:
+1. Foreign keys (automatic in many DBs, explicit is better)
+2. Frequently searched columns
+3. Columns in WHERE, ORDER BY, GROUP BY
+4. DO NOT index everything (write overhead)
+
+### Syntax:
+```python
+from sqlalchemy import Index
+
+class Project(Base):
+    __tablename__ = "projects"
+    name: Mapped[str] = mapped_column(String(200), index=True)
+
+    __table_args__ = (
+        Index('ix_projects_name', 'name'),
+        Index('ix_projects_owner_status', 'owner_id', 'status'),
+    )
+```
+
+## 7. SOFT DELETE (Logical deletion)
+
+### Mandatory implementation (regular models):
+```python
+# In regular models (User, Project, Subtask, Task)
+deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+# When "deleting"
+project.deleted_at = datetime.utcnow()
+db.commit()
+
+# When querying (ALWAYS filter soft delete)
+active_projects = db.query(Project).filter(Project.deleted_at.is_(None)).all()
+```
+
+### APPEND-ONLY exception:
+- ActivityLog and EventLog do NOT have deleted_at
+- Sprint does NOT have deleted_at or updated_at
+- These records are NEVER deleted or modified
+
+### Soft delete rules:
+- NEVER use `db.delete(object)` on regular models
+- ALWAYS filter `deleted_at.is_(None)` in queries for regular models
+- Unique constraints must consider soft delete
+- Restore: `project.deleted_at = None`
+
+## 8. EFFICIENT QUERIES
+
+### Avoid N+1:
+```python
+from sqlalchemy.orm import joinedload
+
+projects = db.query(Project).options(joinedload(Project.owner)).all()
+for project in projects:
+    print(project.owner.full_name)  # No extra queries
+```
+
+### Common filters:
+```python
+# Find by ID (active)
+project = db.query(Project).filter(
+    Project.id == project_id,
+    Project.deleted_at.is_(None)
+).first()
+
+# Text search
+projects = db.query(Project).filter(
+    Project.name.ilike(f"%{search}%"),
+    Project.deleted_at.is_(None)
+).all()
+
+# Pagination
+from sqlalchemy import func
+
+total = db.query(func.count(Project.id)).filter(Project.deleted_at.is_(None)).scalar()
+projects = db.query(Project).filter(
+    Project.deleted_at.is_(None)
+).offset((page - 1) * per_page).limit(per_page).all()
+```
+
+## 9. ALEMBIC MIGRATIONS
+
+### Mandatory flow:
+```bash
+# 1. Modify model in app/domain/models.py
+# 2. Generate migration
+alembic revision --autogenerate -m "Add due_date field to Task"
+
+# 3. Review file in alembic/versions/
+# 4. Apply migration
+alembic upgrade head
+```
+
+### Migration rules:
+- ALWAYS review auto-generated migration
+- Add `server_default` if NOT NULL column in table with existing data
+- Implement downgrade() for rollback
+- DO NOT edit already-applied migrations in production
+- Descriptive names: `add_field_to_table`, `create_table_tasks`
+
+## 10. SESSIONS AND TRANSACTIONS
+
+### Dependency injection pattern:
+```python
+# app/database.py
+from sqlalchemy.orm import sessionmaker
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+```
+
+### Transaction handling:
+```python
+# Compound transaction (project + budget allocation as activity_log)
+try:
+    project = Project(name="New Feature", owner_id=1, budget_allocation=5000)
+    db.add(project)
+    db.flush()  # Get project.id without committing
+
+    log = ActivityLog(
+        project_id=project.id,
+        description="Initial budget allocation",
+        budget_allocated=project.budget_allocation,
+        timestamp=datetime.utcnow()
+    )
+    db.add(log)
+
+    db.commit()
+except Exception as e:
+    db.rollback()
+    raise
+```
+
+## 11. SPECIFIC DECISIONS — FLOWTASK INC.
+
+### Domain business rules:
+
+1. **Budget allocation is dual-registered**
+   - Stored in `budget_allocation` field in the `projects` table
+   - Recorded as an entry (budget_allocated) in the `activity_logs` table
+   - Both records must be created in the same transaction
+
+2. **activity_logs and event_logs are APPEND-ONLY**
+   - NEVER do UPDATE on these tables
+   - NEVER do DELETE on these tables
+   - Only INSERT is permitted
+   - They do not have `deleted_at` or `updated_at` fields
+
+3. **Sprints are immutable after close**
+   - Once a sprint is closed, it CANNOT be modified
+   - The sprint name is the primary key (one sprint per period)
+   - The integrity_hash guarantees it was not altered
+   - They do not have `updated_at` or `deleted_at`
+
+4. **Required budget terminology**
+   - `budget_used` (NOT charged): budget consumed by tasks
+   - `budget_allocated` (NOT credited): budget assigned to a project
+   - `budget_remaining` (NOT balance): budget_allocation - budget_used
+   - Use these terms in code, variables, comments, and UI
+
+## 12. VALIDATION CHECKLIST
+
+Before approving new/modified model:
+
+- [ ] Has id, created_at, updated_at, deleted_at? (except APPEND-ONLY)
+- [ ] Foreign keys with ForeignKey()?
+- [ ] Relationships with back_populates?
+- [ ] Nullable correctly defined?
+- [ ] Indexes on search columns?
+- [ ] Enums defined in enums.py?
+- [ ] Alembic migration generated?
+- [ ] Names in snake_case English?
+- [ ] Money fields use Numeric(10, 2)?
+- [ ] APPEND-ONLY models without delete/update?
+- [ ] No contradictions with decision_log.json?
+
+---
+
+**Version**: 1.3
+**Last updated**: 2026-04-05
+**Project**: FlowTask Inc.
+**Stack**: SQLAlchemy 2.0 + SQLite

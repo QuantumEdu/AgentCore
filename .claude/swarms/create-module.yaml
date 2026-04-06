@@ -1,0 +1,249 @@
+# .claude/swarms/create-module.yaml
+# ========================================
+# Swarm to create a complete module (e.g. Projects)
+# ========================================
+swarm_name: "create-complete-module"
+description: "Creates a fully functional module with all its components"
+strategy: "sequential" # Agents act one after another
+
+participants:
+  - agent: "architect.agent"
+    task: |
+      Design module architecture:
+      1. Identify domain entities
+      2. Define relationships between entities
+      3. Propose necessary use cases
+      4. Validate layer separation
+    output_format: "markdown"
+    output_to: "database-designer.agent"
+
+  - agent: "database-designer.agent"
+    task: |
+      Create domain models and migrations:
+      1. Design SQLAlchemy models (domain/models.py)
+      2. Define relationships and foreign keys
+      3. Generate Alembic migration
+      4. Propose necessary indexes
+    depends_on: "architect.agent"
+    output_format: "code"
+    output_to: "api-designer.agent"
+
+  - agent: "api-designer.agent"
+    task: |
+      Design REST API:
+      1. Define endpoints (GET, POST, PATCH, DELETE)
+      2. Create Pydantic schemas (request/response)
+      3. Document in OpenAPI
+      4. Define error codes
+    depends_on: "database-designer.agent"
+    output_format: "code"
+    output_to: "backend-developer.agent"
+
+  - agent: "backend-developer.agent"
+    task: |
+      Implement business logic:
+      1. Create use cases (services/)
+      2. Implement endpoints (api/v1/)
+      3. Configure dependencies (auth, permissions)
+      4. Validate business rules
+    depends_on: "api-designer.agent"
+    output_format: "code"
+    output_to: "security-expert.agent"
+
+  - agent: "security-expert.agent"
+    task: |
+      Audit security:
+      1. Validate endpoints require auth
+      2. Verify authorization by role
+      3. Review input validations
+      4. Confirm use of argon2id (passwords)
+    depends_on: "backend-developer.agent"
+    output_format: "checklist"
+    output_to: "test-engineer.agent"
+
+  - agent: "test-engineer.agent"
+    task: |
+      Write complete tests:
+      1. Unit tests for use cases (90% coverage)
+      2. Integration tests for repositories
+      3. Create reusable fixtures
+      4. Run pytest and report coverage
+    depends_on: "backend-developer.agent"
+    output_format: "code"
+
+  - agent: "architect.agent"
+    task: |
+      Final validation:
+      1. Review Clean Architecture compliance
+      2. Verify layer separation
+      3. Approve or request corrections
+    depends_on:
+      - "test-engineer.agent"
+      - "security-expert.agent"
+    output_format: "approval"
+
+conditions:
+  - trigger: "test_coverage < 90%"
+    action: "reject"
+    message: "Insufficient coverage in use cases"
+
+  - trigger: "security_issues_found > 0"
+    action: "reject"
+    message: "Resolve security issues before approving"
+
+  - trigger: "architecture_violations > 0"
+    action: "reject"
+    message: "Correct architectural violations"
+
+---
+# ========================================
+# swarms/add-single-endpoint.yaml
+# Swarm to add an endpoint to an existing module
+# ========================================
+swarm_name: "add-single-endpoint"
+description: "Adds a new endpoint to an existing module"
+strategy: "sequential"
+
+participants:
+  - agent: "api-designer.agent"
+    task: |
+      Design the new endpoint:
+      1. Define HTTP method and path
+      2. Create Pydantic schemas (if not existing)
+      3. Document parameters and responses
+      4. Specify HTTP status codes
+    output_format: "specification"
+    output_to: "backend-developer.agent"
+
+  - agent: "backend-developer.agent"
+    task: |
+      Implement endpoint:
+      1. Create use case (if not existing)
+      2. Implement endpoint in api/v1/
+      3. Configure dependencies (auth, roles)
+      4. Handle exceptions
+    depends_on: "api-designer.agent"
+    output_format: "code"
+    output_to: "test-engineer.agent"
+
+  - agent: "test-engineer.agent"
+    task: |
+      Write tests:
+      1. Use case unit test
+      2. At least 3 cases: success, validation error, not found
+      3. Verify coverage >= 90%
+    depends_on: "backend-developer.agent"
+    output_format: "code"
+
+---
+# ========================================
+# swarms/add-model.yaml
+# Swarm to add a domain model
+# ========================================
+swarm_name: "add-domain-model"
+description: "Creates a new domain model with migration"
+strategy: "sequential"
+
+participants:
+  - agent: "architect.agent"
+    task: |
+      Validate model design:
+      1. Verify it belongs to the domain layer
+      2. Identify relationships with other models
+      3. Validate naming and structure
+    output_format: "approval"
+    output_to: "database-designer.agent"
+
+  - agent: "database-designer.agent"
+    task: |
+      Create model and migration:
+      1. Define SQLAlchemy model (domain/models.py)
+      2. Add mandatory fields (id, timestamps, soft delete)
+      3. Define relationships (foreign keys)
+      4. Generate Alembic migration
+      5. Create necessary indexes
+    depends_on: "architect.agent"
+    output_format: "code"
+
+---
+# ========================================
+# swarms/write-tests.yaml
+# Swarm to generate tests for a use case
+# ========================================
+swarm_name: "generate-tests"
+description: "Generates complete test suite for a use case"
+strategy: "parallel" # Test Engineer works alone
+
+participants:
+  - agent: "test-engineer.agent"
+    task: |
+      Write complete tests:
+      1. Test for successful case (happy path)
+      2. Validation tests (required fields, formats)
+      3. Error case tests (not found, duplicates)
+      4. Authorization tests (role permissions)
+      5. Create necessary fixtures
+      6. Run pytest and report coverage
+    output_format: "code"
+
+conditions:
+  - trigger: "test_coverage < 90%"
+    action: "retry"
+    message: "Add more tests to reach 90%"
+
+---
+# ========================================
+# swarms/refactor-security.yaml
+# Swarm to update project security
+# ========================================
+swarm_name: "security-refactor"
+description: "Updates security mechanisms (e.g. bcrypt → argon2id)"
+strategy: "sequential"
+
+participants:
+  - agent: "security-expert.agent"
+    task: |
+      Audit current security:
+      1. Identify bcrypt usage (incompatible Python 3.14)
+      2. Review unauthenticated endpoints
+      3. Validate JWT implementation
+      4. Verify rate limiting
+    output_format: "audit_report"
+    output_to: "backend-developer.agent"
+
+  - agent: "backend-developer.agent"
+    task: |
+      Implement improvements:
+      1. Migrate from bcrypt to argon2id
+      2. Update core/security.py
+      3. Add missing dependencies
+      4. Re-hash existing passwords (data migration)
+    depends_on: "security-expert.agent"
+    output_format: "code"
+    output_to: "test-engineer.agent"
+
+  - agent: "test-engineer.agent"
+    task: |
+      Validate changes:
+      1. Tests for hashing with argon2id
+      2. Tests for login with new passwords
+      3. Verify Python 3.14 compatibility
+    depends_on: "backend-developer.agent"
+    output_format: "test_report"
+
+---
+# ========================================
+# USAGE EXAMPLES
+# ========================================
+#
+# # Create projects module
+# claude swarm run create-complete-module --input "module=projects"
+#
+# # Add search endpoint
+# claude swarm run add-endpoint --input "module=projects,endpoint=search"
+#
+# # Generate tests for CreateProject
+# claude swarm run generate-tests --input "usecase=CreateProject"
+#
+# # Migrate from bcrypt to argon2id
+# claude swarm run security-refactor
