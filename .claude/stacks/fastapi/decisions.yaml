@@ -1,0 +1,439 @@
+---
+# FastAPI Stack - Architecture Decisions
+
+decisions:
+  - id: "001"
+    title: "Use uv as package manager"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Python package management has been slow and inconsistent. pip is slow, pipenv is outdated, poetry has lock file issues."
+    decision: "Use uv as the package manager for all Python dependencies"
+    alternatives:
+      - name: "pip"
+        rejected: "Too slow, no efficient lock file management"
+      - name: "pipenv"
+        rejected: "Outdated, slow, complex dependency resolution"
+      - name: "poetry"
+        rejected: "Lock file issues, slower than uv, complex setup"
+    rationale: "uv is 10-100x faster than pip, has better lock files, is the modern standard for Python 2024+"
+    consequences:
+      positive:
+        - "Faster dependency installation"
+        - "Better lock file management"
+        - "Modern development experience"
+      negative:
+        - "New tool, requires learning curve"
+        - "Less mature than pip (though production-ready)"
+    affected_modules:
+      - "All Python dependencies"
+      - "Development workflow"
+      - "CI/CD pipelines"
+
+  - id: "002"
+    title: "Use Argon2id for password hashing"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Password hashing is critical for security. Common algorithms like MD5, SHA1 are too fast. bcrypt is good but not optimal."
+    decision: "Use Argon2id (argon2-cffi) for all password hashing"
+    alternatives:
+      - name: "bcrypt"
+        rejected: "Good but not optimal. Argon2id is memory-hard, more resistant to GPU/ASIC attacks"
+      - name: "MD5/SHA1/SHA256"
+        rejected: "Too fast, vulnerable to brute-force attacks on GPUs"
+      - name: "scrypt"
+        rejected: "More complex to configure, argon2id is PHC winner"
+    rationale: "Argon2id is the Password Hashing Competition winner 2015. Memory-hard, GPU/ASIC resistant, configurable, stronger than bcrypt"
+    consequences:
+      positive:
+        - "Strongest password hashing available"
+        - "Resistant to GPU/ASIC attacks"
+        - "Configurable for future-proofing"
+      negative:
+        - "Slightly slower than bcrypt (but acceptable)"
+        - "Requires argon2-cffi library"
+    affected_modules:
+      - "Authentication module"
+      - "User registration and login"
+      - "Password reset functionality"
+
+  - id: "003"
+    title: "Use SQLAlchemy 2.0 with Mapped[] syntax"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "SQLAlchemy 1.x syntax is verbose and legacy. 2.0 introduces declarative mapping with type hints and async support."
+    decision: "Use SQLAlchemy 2.0 with Mapped[] and mapped_column() syntax exclusively"
+    alternatives:
+      - name: "SQLAlchemy 1.x Column()"
+        rejected: "Legacy syntax, no type hints, less IDE support"
+      - name: "Django ORM"
+        rejected: "Too tightly coupled to Django framework"
+      - name: "Tortoise ORM"
+        rejected: "Less mature, smaller ecosystem, fewer features"
+    rationale: "SQLAlchemy 2.0 is the modern standard with async support, type hints, better performance, and cleaner syntax"
+    consequences:
+      positive:
+        - "Type-safe models with IDE autocomplete"
+        - "Async support out of the box"
+        - "Better performance with async/await"
+        - "Future-proof with Python 3.12+ type hints"
+      negative:
+        - "Requires learning new syntax for teams familiar with 1.x"
+        - "Breaking changes from 1.x if migrating"
+    affected_modules:
+      - "All database models"
+      - "Repository implementations"
+      - "Migration scripts"
+
+  - id: "004"
+    title: "Use SQLite for dev, PostgreSQL for prod"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Development needs speed and simplicity. Production needs reliability, concurrency, and advanced features."
+    decision: "SQLite (aiosqlite) for development, PostgreSQL 16+ for production"
+    alternatives:
+      - name: "PostgreSQL for dev"
+        rejected: "Overkill, slower startup, requires Docker/server"
+      - name: "SQLite for prod"
+        rejected: "No write concurrency, limited features, not suitable for multi-user systems"
+      - name: "MySQL for prod"
+        rejected: "Less JSON support, weaker type system, fewer advanced features"
+    rationale: "Best of both worlds: fast local dev with SQLite, robust production with PostgreSQL"
+    consequences:
+      positive:
+        - "Fast development without Docker overhead"
+        - "Production-ready with PostgreSQL features (JSON, full-text search, etc.)"
+        - "Easy local testing and debugging"
+      negative:
+        - "Need to maintain two database configurations"
+        - "Potential subtle differences between SQLite and PostgreSQL behavior"
+    affected_modules:
+      - "Database configuration"
+      - "CI/CD pipelines"
+      - "Local development setup"
+
+  - id: "005"
+    title: "Use JWT for authentication"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Session-based auth requires server-side storage. OAuth2 is complex for internal systems. Token-based auth is stateless and scalable."
+    decision: "Use JWT (python-jose) for authentication with HttpOnly cookies (SSR) or Authorization header (SPA)"
+    alternatives:
+      - name: "Session-based auth (express-session style)"
+        rejected: "Requires server-side storage, harder to scale, no native mobile support"
+      - name: "Full OAuth2/OIDC"
+        rejected: "Overkill for internal systems, adds complexity and external dependencies"
+      - name: "API keys"
+        rejected: "No built-in expiration, harder to revoke, no user context"
+    rationale: "JWT is stateless, scalable, works across services, supports mobile, and is industry standard for APIs"
+    consequences:
+      positive:
+        - "Stateless, easy to scale horizontally"
+        - "Works across microservices"
+        - "Built-in expiration and claims"
+        - "Mobile-friendly"
+      negative:
+        - "Cannot revoke individual tokens easily (need blacklist)"
+        - "Token size overhead in headers/cookies"
+        - "Must keep signing secret secure"
+    affected_modules:
+      - "Authentication middleware"
+      - "Login/logout endpoints"
+      - "All protected endpoints"
+
+  - id: "006"
+    title: "Use pytest for testing"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "unittest is verbose and limited. nose is deprecated. pytest is the modern standard with powerful fixtures and plugins."
+    decision: "Use pytest + pytest-asyncio for all testing with 80% minimum coverage on usecases/"
+    alternatives:
+      - name: "unittest"
+        rejected: "Verbose, less powerful, no async support out of the box"
+      - name: "nose"
+        rejected: "Deprecated, no longer maintained"
+      - name: "doctest"
+        rejected: "Limited, not suitable for complex systems"
+    rationale: "pytest is the de facto standard, has powerful fixtures, excellent async support, great plugins (cov, mock, etc.)"
+    consequences:
+      positive:
+        - "Clean, readable test syntax"
+        - "Powerful fixture system"
+        - "Excellent async support with pytest-asyncio"
+        - "Rich ecosystem of plugins"
+        - "Better CI/CD integration"
+      negative:
+        - "Requires learning pytest-specific patterns"
+        - "Fixture management can get complex in large projects"
+    affected_modules:
+      - "All test files"
+      - "CI/CD pipeline configuration"
+      - "Coverage reporting"
+
+  - id: "007"
+    title: "Use ruff for linting and formatting"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "flake8 + black + isort require multiple tools and configurations. Ruff combines them all in one fast Rust-based tool."
+    decision: "Use ruff for both linting and formatting, replacing flake8, black, isort, and pylint"
+    alternatives:
+      - name: "flake8 + black + isort"
+        rejected: "Multiple tools, slower, more configuration files"
+      - name: "pylint"
+        rejected: "Slow, many false positives, complex configuration"
+      - name: "mypy"
+        rejected: "Still needed for type checking (complements ruff, doesn't replace it)"
+    rationale: "ruff is 10-100x faster than Python tools, combines multiple linters/formatters, modern and actively maintained"
+    consequences:
+      positive:
+        - "Fast (10-100x faster than Python tools)"
+        - "Single tool for linting + formatting"
+        - "Compatible with black/isort conventions"
+        - "Faster CI/CD pipelines"
+      negative:
+        - "Newer tool, less mature than flake8/black"
+        - "Some edge cases may differ from black"
+    affected_modules:
+      - "All Python source files"
+      - "Pre-commit hooks"
+      - "CI/CD pipelines"
+
+  - id: "008"
+    title: "Use Jinja2 + HTMX for Stack A (SSR)"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "React adds complexity for internal dashboards. Server-side rendering with HTMX provides interactivity without JavaScript complexity."
+    decision: "Use Jinja2 3.1+ templates + PicoCSS 2.x + HTMX 2.0 for Stack A (internal apps, dashboards, clinical systems)"
+    alternatives:
+      - name: "React + Vite (Stack B)"
+        rejected: "Overkill for internal dashboards, adds build complexity, larger bundle size"
+      - name: "Vanilla JavaScript"
+        rejected: "Verbose, hard to maintain, reinvents the wheel"
+      - name: "Django templates"
+        rejected: "Tied to Django framework, less flexible than Jinja2"
+    rationale: "Jinja2+HTMX provides interactivity with minimal JavaScript, fast development, and is perfect for CRUD-heavy internal apps"
+    consequences:
+      positive:
+        - "Fast development without build step"
+        - "Small bundle size (just HTMX CDN)"
+        - "SEO-friendly by default"
+        - "Progressive enhancement with minimal JS"
+      negative:
+        - "Not ideal for complex SPAs with rich state"
+        - "Less mobile-friendly than React for touch-heavy apps"
+        - "Limited ecosystem compared to React"
+    affected_modules:
+      - "All frontend templates (Stack A)"
+      - "HTTP endpoints (return HTML instead of JSON)"
+      - "CSS framework choice (PicoCSS)"
+
+  - id: "009"
+    title: "Use React + MUI for Stack B (SPA)"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Modern products need rich UI, touch-friendly interfaces, and real-time updates. React ecosystem is mature and well-supported."
+    decision: "Use React 18 + TypeScript 5 + Vite 5 + MUI v6 for Stack B (sellable products, POS, touch UI)"
+    alternatives:
+      - name: "Jinja2 + HTMX (Stack A)"
+        rejected: "Less mobile-friendly, harder to build complex touch UIs, limited component ecosystem"
+      - name: "Vue 3"
+        rejected: "Smaller ecosystem, fewer enterprise components than MUI/React"
+      - name: "Svelte"
+        rejected: "Smaller ecosystem, less mature for enterprise apps"
+    rationale: "React+MUI provides the best component ecosystem, TypeScript support, and mobile-friendly UI for sellable products"
+    consequences:
+      positive:
+        - "Rich component library (MUI v6)"
+        - "Type-safe with TypeScript"
+        - "Mobile-friendly touch UI"
+        - "Large ecosystem and community"
+        - "Great developer experience with Vite"
+      negative:
+        - "Build step required (slower dev reload)"
+        - "Larger bundle size than HTMX"
+        - "Steeper learning curve for Python-focused teams"
+    affected_modules:
+      - "All frontend code (Stack B)"
+      - "API endpoints (return JSON only)"
+      - "Build configuration (Vite)"
+
+  - id: "010"
+    title: "Use PyWebview for Stack C (Desktop)"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Desktop apps need native windows, offline capability, and hardware integration (printers, scales, biometric devices)."
+    decision: "Use PyWebview with local FastAPI server for Stack C (desktop apps, POS systems)"
+    alternatives:
+      - name: "Electron"
+        rejected: "Huge bundle size (100MB+), requires Node.js knowledge, overkill for Python teams"
+      - name: "Tkinter/PyQt"
+        rejected: "Native widgets look dated, harder to style, steeper learning curve"
+      - name: "Kivy"
+        rejected: "Different look and feel, smaller ecosystem, harder to integrate with existing FastAPI code"
+    rationale: "PyWebview leverages existing FastAPI code, uses OS native WebView, small bundle size (~50MB), and integrates with Python hardware libraries"
+    consequences:
+      positive:
+        - "Reuse existing FastAPI backend code"
+        - "Small bundle size (PyInstaller ~50MB)"
+        - "Native OS look and feel"
+        - "Easy hardware integration (python-escpos, pyserial, etc.)"
+        - "Offline capability with local SQLite"
+      negative:
+        - "Limited to modern WebView (no IE support)"
+        - "No native desktop widgets (uses HTML/CSS)"
+        - "Harder to implement system tray/menu bar features"
+    affected_modules:
+      - "Desktop entry point (main.py)"
+      - "Packaging configuration (PyInstaller)"
+      - "Hardware integration modules"
+
+  - id: "011"
+    title: "Use INTEGER autoincrement IDs in v1"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "UUIDs are popular but have drawbacks: larger storage, slower indexes, harder to debug. INT IDs are simpler and faster."
+    decision: "Use INTEGER autoincrement primary keys in v1. Consider UUID for v2 if multi-tenant or distributed systems"
+    alternatives:
+      - name: "UUID v4"
+        rejected: "Larger storage (16 bytes vs 4/8 bytes), slower indexes, harder to debug in logs"
+      - name: "ULID"
+        rejected: "Less standard, no native support in most ORMs, still larger than INT"
+      - name: "CUID"
+        rejected: "Less common, requires additional library, still larger than INT"
+    rationale: "INT IDs are faster, smaller, easier to debug, and sufficient for v1. UUID adds complexity without clear benefit for most systems"
+    consequences:
+      positive:
+        - "Faster indexes and joins"
+        - "Smaller storage footprint"
+        - "Easier to debug (user_id=123 vs user_id=a1b2c3d4...)"
+        - "Simpler URLs and APIs"
+      negative:
+        - "Cannot generate client-side (need round-trip to DB)"
+        - "Not suitable for distributed systems where IDs must be unique across services"
+        - "Enumeration risk (predictable IDs)"
+    affected_modules:
+      - "All database models"
+      - "API responses and URLs"
+      - "Frontend ID handling"
+
+  - id: "012"
+    title: "Use soft delete for main entities"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Hard delete destroys data forever. Auditing, recovery, and historical analysis often need deleted records."
+    decision: "Add deleted_at TIMESTAMP NULL column to all main entities. Use soft delete by default, hard delete only for cleanup jobs"
+    alternatives:
+      - name: "Hard delete only"
+        rejected: "Loses data forever, no audit trail, harder to recover from mistakes"
+      - name: "Archive tables"
+        rejected: "More complex queries, need joins, harder to maintain consistency"
+      - name: "Temporal tables"
+        rejected: "Overkill for most systems, complex, not well-supported in all databases"
+    rationale: "Soft delete provides audit trail, easy recovery, and historical analysis with minimal complexity"
+    consequences:
+      positive:
+        - "Easy recovery from accidental deletes"
+        - "Audit trail for compliance"
+        - "Historical analysis possible"
+        - "Simple to implement (just add WHERE deleted_at IS NULL)"
+      negative:
+        - "Queries must always filter deleted_at"
+        - "Storage grows over time (need cleanup jobs)"
+        - "Unique constraints must exclude deleted records"
+    affected_modules:
+      - "All main entity models"
+      - "Repository queries (filter deleted_at)"
+      - "Cleanup/background jobs"
+
+  - id: "013"
+    title: "Use PicoCSS for Stack A styling"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Tailwind requires build step and extensive class names. Bootstrap is heavy. Semantic HTML should look good by default."
+    decision: "Use PicoCSS 2.x for Stack A (SSR apps) - semantic CSS framework without classes"
+    alternatives:
+      - name: "Tailwind CSS"
+        rejected: "Requires build step, verbose class names, overkill for internal apps"
+      - name: "Bootstrap 5"
+        rejected: "Heavier, requires more classes, less semantic by default"
+      - name: "Bulma"
+        rejected: "Good but PicoCSS is more semantic and modern"
+    rationale: "PicoCSS is lightweight, semantic (no classes needed), and perfect for internal dashboards where speed matters"
+    consequences:
+      positive:
+        - "No build step needed"
+        - "Semantic HTML looks good by default"
+        - "Lightweight (~10KB minified)"
+        - "Fast development"
+      negative:
+        - "Less customization than Tailwind"
+        - "Smaller ecosystem of components"
+        - "May need custom CSS for complex layouts"
+    affected_modules:
+      - "All HTML templates (Stack A)"
+      - "CSS customization"
+      - "Design system"
+
+  - id: "014"
+    title: "Use hexagonal architecture (lightweight)"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Layered architecture often couples business logic to frameworks. Hexagonal (ports & adapters) isolates domain from infrastructure."
+    decision: "Use lightweight hexagonal architecture: domain/ isolated, usecases/ orchestrate, repositories/ abstract data access"
+    alternatives:
+      - name: "Traditional MVC"
+        rejected: "Business logic leaks into controllers, hard to test, coupled to frameworks"
+      - name: "Clean Architecture (strict)"
+        rejected: "Too many layers, overkill for most systems, adds complexity"
+      - name: "Onion Architecture"
+        rejected: "Similar to hexagonal but more complex naming, harder to understand for teams"
+    rationale: "Lightweight hexagonal provides testability, framework independence, and clear separation without over-engineering"
+    consequences:
+      positive:
+        - "Business logic isolated from frameworks"
+        - "Easy to test use cases without FastAPI/SQLAlchemy"
+        - "Can swap infrastructure (ORM, DB) without touching domain"
+        - "Clear code organization"
+      negative:
+        - "More boilerplate (interfaces, adapters)"
+        - "Steeper learning curve for junior devs"
+        - "Can be overkill for simple CRUD apps"
+    affected_modules:
+      - "All source code organization"
+      - "Testing strategy (test use cases, not controllers)"
+      - "Repository pattern implementation"
+
+  - id: "015"
+    title: "Use Python type hints throughout"
+    date: "2026-04-12"
+    status: "accepted"
+    context: "Python 3.12+ has excellent type support. Type hints improve IDE support, catch bugs early, and serve as documentation."
+    decision: "Use Python type hints (PEP 484) throughout the codebase. Enable mypy for type checking in CI/CD"
+    alternatives:
+      - name: "No type hints"
+        rejected: "No IDE autocomplete, harder to catch bugs, no self-documenting code"
+      - name: "Type comments (Python 2 style)"
+        rejected: "Deprecated, verbose, not well-supported by modern tools"
+      - name: "Runtime type checking (pydantic everywhere)"
+        rejected: "Overkill, performance overhead, pydantic is for validation not type hints"
+    rationale: "Type hints improve developer experience, catch bugs early, and make code more maintainable"
+    consequences:
+      positive:
+        - "Better IDE autocomplete and refactoring"
+        - "Catch type errors before runtime"
+        - "Self-documenting code"
+        - "Easier onboarding for new devs"
+      negative:
+        - "Slightly more verbose code"
+        - "Learning curve for teams new to type hints"
+        - "Some dynamic patterns are harder to type"
+    affected_modules:
+      - "All Python source files"
+      - "Function signatures and return types"
+      - "CI/CD pipeline (mypy check)"
+
+metadata:
+  version: "2.0"
+  stack: "FastAPI + Python + SQLAlchemy"
+  last_updated: "2026-04-12"
+  author: "AgentCore v2.0"
+  repository: "https://github.com/anomalyco/agentcore"
