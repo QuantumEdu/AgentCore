@@ -1,0 +1,216 @@
+# PROJECT-BRIEF-FULL.yaml
+# Conversión de la plantilla Markdown a YAML estructurado
+# Generado desde: D:\02-A\code\agentcore_publish\improve01\PROJECT-BRIEF-FULL
+
+# 1️⃣ Contexto & Stack Base
+nombre: "Nombre del Sistema"
+tipo_entrega: "web_saas"  # web_saas | app_desktop | hibrido | api_backend
+stack_principal: "fastapi_ssr"  # nextjs15 | go_wails | fastapi_ssr | fastapi_spa | fastapi_desktop
+criticalidad: "high"  # low | medium | high | critical
+team_size: "2-5"  # 1 | 2-5 | 6-15 | 15+
+timeframe: "medium-3mes"  # mvp-2sem | short-1mes | medium-3mes | long-6mes+
+
+# 2️⃣ Arquitectura & Límites de Dominio
+arquitectura:
+  patron: "hexagonal_ligera"  # hexagonal_ligera | clean_architecture | capas_fastapi | otro
+  bounded_contexts:
+    auth-users: false
+    catalog-products: false
+    orders-sales: false
+    inventory: false
+    reporting: false
+    notifications: false
+  tipo_ejecucion: "sync"  # sync | async | event_driven | hybrid | streaming
+  justificacion_ejecucion: ""
+
+# 3️⃣ Estrategia de Datos (DBs, ORM, Migraciones, Cache)
+estrategia_datos:
+  db_dev: "sqlite"  # sqlite | postgresql_docker | mongodb | none
+  db_prod: "postgresql"  # postgresql | mysql | mongodb | dynamodb | none
+  orm: "sqlalchemy"  # prisma | gorm | sqlalchemy
+  ids: "autoincrement"  # cuid | uuid | autoincrement
+  cache_server: "redis"  # redis | in_memory | none
+  estado_cliente: "zustand"  # zustand | react_context | redux | none
+  data_fetching: "htmx"  # tanstack_query | swr | htmx | server_components
+  retencion_dias: 90
+  soft_delete: true
+  backup: "automated-daily"  # automated-daily | point-in-time | manual
+
+# 4️⃣ Frontend, UI & Tiempo Real
+frontend:
+  renderizado: "jinja2"  # react19 | jinja2 | react18_spa | wails_webview | pywebview
+  validacion: "pydantic"  # zod | pydantic | go_validator | htmx_native
+  tiempo_real: "htmx_polling"  # socketio | websocket | sse | htmx_polling | none
+
+# 5️⃣ Contratos, APIs & Documentación
+api_contratos:
+  especificacion: "openapi"  # openapi | swagger | fastapi_docs | nextjs_api_routes | none
+  ubicacion: "./specs/"  # ./specs/ | ./docs/ | inline | url_externa
+  puertos_inbound:
+    - "http_rest"  # http_rest | server_actions | websocket | htmx | cli
+  puertos_outbound:
+    - "repository_interfaces"  # repository_interfaces | printer_service | payment_gateway | external_api_client
+  regla_aislamiento: "domain_no_importa_frameworks"  # domain_no_importa_frameworks | usecases_solo_conocen_ports | tenant_filter_automatico
+  acl: false  # true | false
+
+# 6️⃣ Estrategia AI + Fallback
+ai_fallback:
+  integracion_llm: false  # true | false
+  casos: []  # generacion_contenido | rag | clasificacion | asistente | otro
+  proveedor: ""  # openai | anthropic | google | local | multi_router
+  fallback_strategy: []  # retry_backoff | proveedor_secundario | cache_ttl | regla_estatica | degradacion_elegante
+  guardrails: []  # schema_validation | llm_as_judge | filtro_contenido | rate_limit
+
+# 7️⃣ Seguridad, Auth & Compliance
+seguridad:
+  auth: "jwt"  # nextauth | jwt | jwt_headers | oauth2 | mtls
+  hashing: "argon2id"  # bcrypt | argon2id | go_bcrypt
+  authz: "rbac"  # rbac | abac | permissions_granulares | ownership_based
+  tenant_strategy: "tenant_id_uuid"  # session_user_tenantId | tenant_id_uuid | sucursal_id_automatico | single_tenant
+  encriptacion:
+    at_rest: "aes256"  # aes256 | none
+    in_transit: "tls13"  # tls13 | none
+    field_level_pii: false  # true | false
+  compliance: []  # gdpr | hipaa | soc2 | pci_dss | none
+  auditoria_retencion: 90
+
+# 8️⃣ Testing, Calidad & Herramientas
+testing_calidad:
+  modo: "flexible"  # strict | flexible | test_after | minimal
+  coverage_unit: 80  # 70 | 80 | 90
+  coverage_integration: "optional"  # required | optional | none
+  coverage_e2e: "critical_paths"  # critical_paths | full | none
+  testing_framework: "pytest"  # vitest | go_test | pytest
+  package_manager: "uv"  # pnpm | npm | go_mod | uv
+  linter: "ruff"  # eslint_prettier | golangci_lint | ruff
+  type_check: "mypy"  # tsc | mypy | go_vet
+
+# 9️⃣ Observabilidad & Alertas
+observabilidad:
+  log_format: "json_estructurado"  # json_estructurado | texto_plano | zerolog
+  log_nivel_prod: "warn"  # warn | error
+  log_destino: "stdout_loki"  # stdout_loki | cloud_native | datadog_nr
+  metrics_framework: "none"  # prometheus | opentelemetry | cloud_native | none
+  key_metrics: []  # request_duration | error_rate | business_metric | queue_depth
+  tracing: false  # true | false
+  tracing_provider: ""  # jaeger | zipkin | datadog
+  tracing_sample: 0.01  # 0.01 | 0.1 | 1.0
+
+# 🔟 Deploy, Runtime & CI/CD
+deploy_runtime:
+  plataforma: "docker_compose"  # vercel | cloud_run | railway | kubernetes | docker_compose | binario_nativo
+  estrategia_escalamiento: "manual"  # horizontal | vertical | serverless | manual
+  instancias: "1/1"  # formato: min/max
+  timeout: 60  # 30 | 60 | 300
+  health: "/health"  # /health | /ready | /ping
+  pipeline_provider: "github_actions"  # github_actions | gitlab_ci | circleci | jenkins | argocd
+  pipeline_etapas:
+    lint: false
+    test: true
+    type_check: true
+    security_scan: false
+    build: true
+    deploy_staging: false
+    manual_approval: false
+    deploy_prod: false
+  rollback: "blue_green"  # immediate | blue_green | canary | feature_flag
+
+# 1️⃣1️⃣ Evolución, Versionado, Complejidad & Hardware
+evolucion_complejidad:
+  api_versioning: "none"  # semver_url | header | date_based | none
+  deprecation_dias: 90
+  sunset_dias: 180
+  comunicacion: "changelog"  # changelog | email | in_app | docs
+  schema_strategy: "expand_contract"  # expand_contract | dual_write | big_bang | blue_green_db
+  feature_flags_tool: "env_var"  # unleash | launchdarkly | flagsmith | env_var
+  feature_flags_rollout: "canary"  # usuarios | segmento | canary | kill_switch
+  complexity_score: 5  # 1-10
+  factores_criticos: []  # logica | integraciones | datos | seguridad
+  top_3_riesgos: []  # lista de {riesgo, mitigacion}
+  enfoque_entrega: "vertical_slice"  # mvp_iterativo | vertical_slice | horizontal_layer | big_bang
+
+# Hardware Físico (si aplica)
+hardware_fisico:
+  impresora: false  # true | false
+  báscula_serial: false  # true | false
+  biométrico_lector: false  # true | false
+  modelo_precio_mxn: ""  # modelo y precio en MXN
+
+# 1️⃣2️⃣ Domain Modeling (DDD Lite → Pro)
+domain_modeling:
+  activar: false  # true | false
+  entidades: []  # lista de entidades
+  value_objects: []  # lista de value objects
+  aggregates: []  # lista de aggregates
+  invariantes: []  # lista de invariantes críticos
+  lenguaje_ubicuo: []  # lista de términos clave
+  eventos_dominio: false  # true | false
+
+# 1️⃣3️⃣ Consistencia & Transacciones
+consistencia_transacciones:
+  consistencia: "fuerte"  # fuerte | eventual | mixta
+  estrategia: "transacciones_db"  # transacciones_db | saga_coreografia | saga_orquestacion
+  concurrencia: "optimistic_locking"  # optimistic_locking | pessimistic_locking | ninguna
+  idempotencia: "optional"  # required | optional | none
+
+# 1️⃣4️⃣ Resiliencia & Fallos
+resiliencia_fallos:
+  estrategias: []  # retry_backoff | circuit_breaker | timeout | bulkhead | graceful_degradation
+  fallback_general: ""  # descripción del fallback general
+
+# 1️⃣5️⃣ Performance & Escalabilidad
+performance_escabilidad:
+  caching: "none"  # read_through | write_through | cache_aside | none
+  db_optimizacion: false  # true | false
+  pagination: "offset"  # offset | cursor
+  rate_limiting: "none"  # global | por_usuario | por_endpoint | none
+  edge_cdn: false  # true | false
+
+# 1️⃣6️⃣ Modelo de Errores
+modelo_errores:
+  formato: "custom"  # rfc7807 | custom
+  tipos: []  # domain_errors | validation_errors | infra_errors
+  logging_errores: "estructurado"  # estructurado | basico
+
+# 1️⃣7️⃣ Seguridad Avanzada (Opcional)
+seguridad_avanzada:
+  threat_modeling: "basico"  # stride | basico | none
+  protecciones: []  # csrf | rate_abuse | replay_attacks | input_sanitization
+  owasp: false  # true | false
+
+# 1️⃣8️⃣ Configuración & Secretos
+configuracion_secretos:
+  config: "env_simple"  # env_simple | config_por_entorno | config_service
+  secretos: "env_vars"  # env_vars | secret_manager | vault
+
+# 1️⃣9️⃣ Evolución del Sistema
+evolucion_sistema:
+  compatibilidad: "backward_compatible"  # backward_compatible | breaking_allowed
+  estrategia: "refactor_incremental"  # strangler_pattern | refactor_incremental | big_rewrite
+
+# 2️⃣0️⃣ Data Lifecycle
+data_lifecycle:
+  datos: []  # archivado | anonimizacion | eliminacion_legal
+  data_lineage: false  # true | false
+
+# 2️⃣1️⃣ UX & Flujos (Ligero)
+ux_flujos:
+  user_journeys: []  # lista de user journeys
+  estados_ui: []  # loading | empty | error | success
+
+# 2️⃣2️⃣ Developer Experience (DX)
+developer_experience:
+  repo: "monorepo"  # monorepo | multirepo
+  git: "trunk_based"  # trunk_based | gitflow
+  convenciones: []  # lista de convenciones
+
+# 2️⃣3️⃣ Costos & FinOps
+costos_finops:
+  estimacion: ""  # estimación de costos
+  control: []  # limites_consumo | alertas_costo | optimizacion_continua
+
+# Notas:
+# - Este archivo es una conversión de la plantilla Markdown PROJECT-BRIEF-FULL
+# - Todos los valores son los defaults indicados en la estructura YAML requerida
+# - Para usar en proyectos reales, marcar/ajustar los valores según las necesidades del proyecto
+# - Gentle-AI lee este archivo como restricciones fijas al iniciar sdd-spec o generación de PRD

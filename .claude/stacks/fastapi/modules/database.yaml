@@ -1,0 +1,742 @@
+name: database
+description: "Módulo de base de datos con SQLAlchemy 2.0, Alembic y modelos base"
+version: 2.0.0
+
+stack:
+  - "sqlalchemy>=2.0.25"
+  - "alembic>=1.13.0"
+  - "asyncpg>=0.29.0"
+  - "aiosqlite>=0.19.0"
+  - "psycopg2-binary>=2.9.9"
+
+dependencies:
+  - auth
+
+configuration:
+  database_url: "${DATABASE_URL:sqlite+aiosqlite:///./app.db}"
+  async_database_url: "${ASYNC_DATABASE_URL:sqlite+aiosqlite:///./app.db}"
+  echo_sql: false
+  pool_size: 5
+  max_overflow: 10
+  pool_timeout: 30
+  pool_recycle: 3600
+
+  alembic:
+    script_location: "alembic"
+    file_template: "%%(year)d%%(month).2d%%(day).2d_%%(rev)s_%%(slug)s"
+    timezone: "UTC"
+
+models:
+  base_classes:
+    timestamp_mixin:
+      code: |
+        from datetime import datetime
+        from sqlalchemy.orm import Mapped, mapped_column
+        from sqlalchemy import DateTime, func
+
+        class TimestampMixin:
+            """
+            Mixin that adds timestamp fields to a model.
+            Automatically sets created_at and updated_at.
+            """
+            created_at: Mapped[datetime] = mapped_column(
+                DateTime(timezone=True),
+                server_default=func.now(),
+                nullable=False
+            )
+            updated_at: Mapped[datetime] = mapped_column(
+                DateTime(timezone=True),
+                server_default=func.now(),
+                onupdate=func.now(),
+                nullable=False
+            )
+
+    soft_delete_mixin:
+      code: |
+        from datetime import datetime
+        from sqlalchemy.orm import Mapped, mapped_column
+        from sqlalchemy import DateTime
+
+        class SoftDeleteMixin:
+            """
+            Mixin that adds soft delete functionality to a model.
+            Uses deleted_at timestamp instead of hard deletes.
+            """
+            deleted_at: Mapped[datetime | None] = mapped_column(
+                DateTime(timezone=True),
+                nullable=True,
+                index=True
+            )
+
+            @property
+            def is_deleted(self) -> bool:
+                """Check if the record is soft-deleted."""
+                return self.deleted_at is not None
+
+            def soft_delete(self) -> None:
+                """Mark the record as deleted."""
+                self.deleted_at = datetime.utcnow()
+
+            def restore(self) -> None:
+                """Restore a soft-deleted record."""
+                self.deleted_at = None
+
+  example_models:
+    user:
+      code: |
+        from sqlalchemy.orm import Mapped, mapped_column, relationship
+        from sqlalchemy import String, Boolean, Integer, ForeignKey, Enum as SQLEnum
+        from enum import Enum
+        from app.infrastructure.persistence.base import TimestampMixin, SoftDeleteMixin, Base
+
+        class UserRole(str, Enum):
+            SUPERADMIN = "superadmin"
+            ADMIN = "admin"
+            MANAGER = "manager"
+            USER = "user"
+            GUEST = "guest"
+
+        class User(TimestampMixin, SoftDeleteMixin, Base):
+            __tablename__ = "users"
+
+            id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+            email: Mapped[str] = mapped_column(
+                String(255),
+                nullable=False,
+                unique=True,
+                index=True
+            )
+            password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+            full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+            role: Mapped[UserRole] = mapped_column(
+                SQLEnum(UserRole),
+                default=UserRole.USER,
+                nullable=False,
+                index=True
+            )
+            is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+            phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
+            # Relationships
+            orders: Mapped[list["Order"]] = relationship(
+                "Order",
+                back_populates="user",
+                cascade="all, delete-orphan"
+            )
+            profile: Mapped["UserProfile | None"] = relationship(
+                "UserProfile",
+                back_populates="user",
+                uselist=False,
+                cascade="all, delete-orphan"
+            )
+
+            def __repr__(self) -> str:
+                return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"
+
+    user_profile:
+      code: |
+        from sqlalchemy.orm import Mapped, mapped_column, relationship
+        from sqlalchemy import String, Text, Integer, ForeignKey, Date
+        from datetime import date
+        from app.infrastructure.persistence.base import TimestampMixin, SoftDeleteMixin, Base
+
+        class UserProfile(TimestampMixin, SoftDeleteMixin, Base):
+            __tablename__ = "user_profiles"
+
+            id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+            user_id: Mapped[int] = mapped_column(
+                Integer,
+                ForeignKey("users.id", ondelete="CASCADE"),
+                nullable=False,
+                unique=True
+            )
+            address: Mapped[str | None] = mapped_column(String(500), nullable=True)
+            city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+            state: Mapped[str | None] = mapped_column(String(100), nullable=True)
+            zip_code: Mapped[str | None] = mapped_column(String(20), nullable=True)
+            country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+            bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+            birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+            avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+            # Relationships
+            user: Mapped["User"] = relationship(
+                "User",
+                back_populates="profile"
+            )
+
+            def __repr__(self) -> str:
+                return f"<UserProfile(id={self.id}, user_id={self.user_id})>"
+
+    order:
+      code: |
+        from sqlalchemy.orm import Mapped, mapped_column, relationship
+        from sqlalchemy import String, Numeric, Integer, ForeignKey, Enum as SQLEnum
+        from decimal import Decimal
+        from enum import Enum
+        from app.infrastructure.persistence.base import TimestampMixin, SoftDeleteMixin, Base
+
+        class OrderStatus(str, Enum):
+            PENDING = "pending"
+            CONFIRMED = "confirmed"
+            PROCESSING = "processing"
+            SHIPPED = "shipped"
+            DELIVERED = "delivered"
+            CANCELLED = "cancelled"
+            REFUNDED = "refunded"
+
+        class Order(TimestampMixin, SoftDeleteMixin, Base):
+            __tablename__ = "orders"
+
+            id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+            user_id: Mapped[int] = mapped_column(
+                Integer,
+                ForeignKey("users.id", ondelete="CASCADE"),
+                nullable=False,
+                index=True
+            )
+            order_number: Mapped[str] = mapped_column(
+                String(50),
+                nullable=False,
+                unique=True,
+                index=True
+            )
+            status: Mapped[OrderStatus] = mapped_column(
+                SQLEnum(OrderStatus),
+                default=OrderStatus.PENDING,
+                nullable=False,
+                index=True
+            )
+            total_amount: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False,
+                default=Decimal("0.00")
+            )
+            subtotal: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False,
+                default=Decimal("0.00")
+            )
+            tax_amount: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False,
+                default=Decimal("0.00")
+            )
+            discount_amount: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False,
+                default=Decimal("0.00")
+            )
+            shipping_address: Mapped[str | None] = mapped_column(String(500), nullable=True)
+            notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+
+            # Relationships
+            user: Mapped["User"] = relationship("User", back_populates="orders")
+            items: Mapped[list["OrderItem"]] = relationship(
+                "OrderItem",
+                back_populates="order",
+                cascade="all, delete-orphan"
+            )
+
+            def __repr__(self) -> str:
+                return f"<Order(id={self.id}, order_number='{self.order_number}', status='{self.status}')>"
+
+    order_item:
+      code: |
+        from sqlalchemy.orm import Mapped, mapped_column, relationship
+        from sqlalchemy import String, Numeric, Integer, ForeignKey
+        from decimal import Decimal
+        from app.infrastructure.persistence.base import TimestampMixin, Base
+
+        class OrderItem(TimestampMixin, Base):
+            __tablename__ = "order_items"
+
+            id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+            order_id: Mapped[int] = mapped_column(
+                Integer,
+                ForeignKey("orders.id", ondelete="CASCADE"),
+                nullable=False,
+                index=True
+            )
+            product_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+            product_name: Mapped[str] = mapped_column(String(255), nullable=False)
+            product_sku: Mapped[str | None] = mapped_column(String(100), nullable=True)
+            quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+            unit_price: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False
+            )
+            subtotal: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False
+            )
+            discount: Mapped[Decimal] = mapped_column(
+                Numeric(10, 2),
+                nullable=False,
+                default=Decimal("0.00")
+            )
+
+            # Relationships
+            order: Mapped["Order"] = relationship("Order", back_populates="items")
+
+            @property
+            def total(self) -> Decimal:
+                """Calculate total price for this item."""
+                return (self.unit_price * self.quantity) - self.discount
+
+            def __repr__(self) -> str:
+                return f"<OrderItem(id={self.id}, product='{self.product_name}', qty={self.quantity})>"
+
+alembic:
+  configuration:
+    code: |
+      # alembic/env.py
+      from logging.config import fileConfig
+      from sqlalchemy import engine_from_config, pool
+      from alembic import context
+      import sys
+      import os
+
+      # Add parent directory to path
+      sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+      from app.core.config import settings
+      from app.infrastructure.persistence.base import Base
+      from app.infrastructure.persistence.models import User, UserProfile, Order, OrderItem
+
+      # this is the Alembic Config object
+      config = context.config
+
+      # Interpret the config file for Python logging
+      if config.config_file_name is not None:
+          fileConfig(config.config_file_name)
+
+      # Set the database URL from settings
+      config.set_main_option("sqlalchemy.url", settings.async_database_url)
+
+      # Add your model's MetaData object here
+      target_metadata = Base.metadata
+
+      def run_migrations_offline() -> None:
+          """Run migrations in 'offline' mode."""
+          url = config.get_main_option("sqlalchemy.url")
+          context.configure(
+              url=url,
+              target_metadata=target_metadata,
+              literal_binds=True,
+              dialect_opts={"paramstyle": "named"},
+          )
+
+          with context.begin_transaction():
+              context.run_migrations()
+
+      def run_migrations_online() -> None:
+          """Run migrations in 'online' mode."""
+          from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+          from alembic import async
+
+          connectable = create_async_engine(settings.async_database_url)
+
+          async def run_async_migrations():
+              async with connectable.connect() as connection:
+                  await connection.run_sync(do_run_migrations)
+
+          def do_run_migrations(connection):
+              context.configure(
+                  connection=connection,
+                  target_metadata=target_metadata,
+                  compare_type=True,
+              )
+
+              with context.begin_transaction():
+                  context.run_migrations()
+
+          import asyncio
+              asyncio.run(run_async_migrations())
+
+      if context.is_offline_mode():
+          run_migrations_offline()
+      else:
+          run_migrations_online()
+
+  alembic_ini:
+    code: |
+      # alembic.ini
+      [alembic]
+      script_location = alembic
+      file_template = %%(year)d%%(month).2d%%(day).2d_%%(rev)s_%%(slug)s
+      timezone = UTC
+
+      [post_write_hooks]
+
+      [loggers]
+      keys = root,sqlalchemy,alembic
+
+      [handlers]
+      keys = console
+
+      [formatters]
+      keys = generic
+
+      [logger_root]
+      level = WARN
+      handlers = console
+      qualname =
+
+      [logger_sqlalchemy]
+      level = WARN
+      handlers =
+      qualname = sqlalchemy.engine
+
+      [logger_alembic]
+      level = INFO
+      handlers =
+      qualname = alembic
+
+      [handler_console]
+      class = StreamHandler
+      args = (sys.stderr,)
+      level = NOTSET
+      formatter = generic
+
+      [formatter_generic]
+      format = %(levelname)-5.5s [%(name)s] %(message)s
+      datefmt = %H:%M:%S
+
+repositories:
+  base_repository:
+    code: |
+      from typing import Generic, TypeVar, Type, Optional, List, Any
+      from sqlalchemy.ext.asyncio import AsyncSession
+      from sqlalchemy import select, update, delete, func, and_
+      from sqlalchemy.orm import Mapped
+
+      ModelType = TypeVar("ModelType", bound=Any)
+
+      class BaseRepository(Generic[ModelType]):
+          """
+          Base repository with common CRUD operations.
+          Provides a generic interface for database operations.
+          """
+
+          def __init__(self, model: Type[ModelType], db: AsyncSession):
+              self.model = model
+              self.db = db
+
+          async def create(self, **kwargs) -> ModelType:
+              """Create a new record."""
+              obj = self.model(**kwargs)
+              self.db.add(obj)
+              await self.db.commit()
+              await self.db.refresh(obj)
+              return obj
+
+          async def get_by_id(self, id: int) -> Optional[ModelType]:
+              """Get a record by ID."""
+              result = await self.db.execute(
+                  select(self.model).where(self.model.id == id)
+              )
+              return result.scalar_one_or_none()
+
+          async def get_all(
+              self,
+              skip: int = 0,
+              limit: int = 100,
+              order_by: str | None = None
+          ) -> List[ModelType]:
+              """Get all records with pagination."""
+              query = select(self.model)
+
+              if order_by:
+                  if order_by.startswith("-"):
+                      query = query.order_by(getattr(self.model, order_by[1:]).desc())
+                  else:
+                      query = query.order_by(getattr(self.model, order_by).asc())
+
+              query = query.offset(skip).limit(limit)
+              result = await self.db.execute(query)
+              return list(result.scalars().all())
+
+          async def update(self, id: int, **kwargs) -> Optional[ModelType]:
+              """Update a record by ID."""
+              await self.db.execute(
+                  update(self.model)
+                  .where(self.model.id == id)
+                  .values(**kwargs)
+              )
+              await self.db.commit()
+              return await self.get_by_id(id)
+
+          async def delete(self, id: int) -> bool:
+              """Delete a record by ID (hard delete)."""
+              result = await self.db.execute(
+                  delete(self.model).where(self.model.id == id)
+              )
+              await self.db.commit()
+              return result.rowcount > 0
+
+          async def soft_delete(self, id: int) -> Optional[ModelType]:
+              """Soft delete a record by ID."""
+              obj = await self.get_by_id(id)
+              if obj and hasattr(obj, "soft_delete"):
+                  obj.soft_delete()
+                  await self.db.commit()
+                  await self.db.refresh(obj)
+              return obj
+
+          async def count(self, filters: dict | None = None) -> int:
+              """Count records with optional filters."""
+              query = select(func.count()).select_from(self.model)
+
+              if filters:
+                  conditions = [
+                      getattr(self.model, key) == value
+                      for key, value in filters.items()
+                  ]
+                  if conditions:
+                      query = query.where(and_(*conditions))
+
+              result = await self.db.execute(query)
+              return result.scalar()
+
+          async def exists(self, id: int) -> bool:
+              """Check if a record exists by ID."""
+              return await self.get_by_id(id) is not None
+
+          async def bulk_create(self, items: List[dict]) -> List[ModelType]:
+              """Create multiple records in a single transaction."""
+              objects = [self.model(**item) for item in items]
+              self.db.add_all(objects)
+              await self.db.commit()
+              for obj in objects:
+                  await self.db.refresh(obj)
+              return objects
+
+  user_repository_example:
+    code: |
+      from typing import Optional, List
+      from sqlalchemy import select
+      from sqlalchemy.ext.asyncio import AsyncSession
+      from app.infrastructure.persistence.models import User, UserRole
+      from app.infrastructure.persistence.repositories.base import BaseRepository
+
+      class UserRepository(BaseRepository[User]):
+          """
+          Repository for User model with specific queries.
+          """
+
+          def __init__(self, db: AsyncSession):
+              super().__init__(User, db)
+
+          async def get_by_email(self, email: str) -> Optional[User]:
+              """Get a user by email address."""
+              result = await self.db.execute(
+                  select(User).where(User.email == email)
+              )
+              return result.scalar_one_or_none()
+
+          async def get_by_role(
+              self,
+              role: UserRole,
+              skip: int = 0,
+              limit: int = 100
+          ) -> List[User]:
+              """Get users by role."""
+              result = await self.db.execute(
+                  select(User)
+                  .where(User.role == role)
+                  .offset(skip)
+                  .limit(limit)
+              )
+              return list(result.scalars().all())
+
+          async def search(
+              self,
+              query: str,
+              skip: int = 0,
+              limit: int = 100
+          ) -> List[User]:
+              """Search users by name or email."""
+              search_pattern = f"%{query}%"
+              result = await self.db.execute(
+                  select(User)
+                  .where(
+                      (User.full_name.ilike(search_pattern)) |
+                      (User.email.ilike(search_pattern))
+                  )
+                  .offset(skip)
+                  .limit(limit)
+              )
+              return list(result.scalars().all())
+
+          async def get_active_users(
+              self,
+              skip: int = 0,
+              limit: int = 100
+          ) -> List[User]:
+              """Get all active (non-deleted) users."""
+              result = await self.db.execute(
+                  select(User)
+                  .where(User.deleted_at.is_(None))
+                  .where(User.is_active == True)
+                  .offset(skip)
+                  .limit(limit)
+              )
+              return list(result.scalars().all())
+
+async_session:
+  configuration:
+    code: |
+      from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+      from app.core.config import settings
+
+      # Create async engine
+      engine = create_async_engine(
+          settings.async_database_url,
+          echo=settings.echo_sql,
+          pool_size=settings.pool_size,
+          max_overflow=settings.max_overflow,
+          pool_timeout=settings.pool_timeout,
+          pool_recycle=settings.pool_recycle,
+      )
+
+      # Create async session factory
+      async_session_maker = async_sessionmaker(
+          engine,
+          class_=AsyncSession,
+          expire_on_commit=False,
+      )
+
+      async def get_db() -> AsyncSession:
+          """
+          Dependency for FastAPI to get database session.
+          """
+          async with async_session_maker() as session:
+              try:
+                  yield session
+              finally:
+                  await session.close()
+
+indexes:
+  recommended:
+    users:
+      - columns: ["email"]
+        unique: true
+        rationale: "Prevent duplicate email addresses"
+
+      - columns: ["role"]
+        unique: false
+        rationale: "Optimize queries filtering by role"
+
+      - columns: ["deleted_at"]
+        unique: false
+        rationale: "Optimize soft delete queries"
+
+      - columns: ["is_active", "deleted_at"]
+        unique: false
+        rationale: "Optimize active user queries"
+
+    orders:
+      - columns: ["order_number"]
+        unique: true
+        rationale: "Prevent duplicate order numbers"
+
+      - columns: ["user_id"]
+        unique: false
+        rationale: "Optimize user's orders queries"
+
+      - columns: ["status"]
+        unique: false
+        rationale: "Optimize order status filtering"
+
+      - columns: ["status", "created_at"]
+        unique: false
+        rationale: "Optimize dashboard queries for recent orders by status"
+
+    order_items:
+      - columns: ["order_id"]
+        unique: false
+        rationale: "Optimize order items retrieval"
+
+      - columns: ["product_id"]
+        unique: false
+        rationale: "Optimize product sales analysis"
+
+performance:
+  optimizations:
+    - name: "Connection Pooling"
+      description: "Use SQLAlchemy connection pooling to reuse database connections"
+      implementation: "Configured in async engine with pool_size, max_overflow, pool_timeout"
+
+    - name: "Eager Loading"
+      description: "Use selectinload() or joinedload() to avoid N+1 queries"
+      implementation: |
+        # Example:
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(
+            select(Order)
+            .options(selectinload(Order.items))
+            .where(Order.id == order_id)
+        )
+
+    - name: "Partial Indexes"
+      description: "Create indexes on frequently queried subsets of data"
+      implementation: "CREATE INDEX idx_active_users ON users (is_active, deleted_at) WHERE deleted_at IS NULL"
+
+    - name: "Batch Operations"
+      description: "Use bulk operations for inserting/updating multiple records"
+      implementation: |
+        # Example:
+        await db.execute(
+            insert(User).values([
+                {"email": "user1@example.com", "full_name": "User 1"},
+                {"email": "user2@example.com", "full_name": "User 2"},
+            ])
+        )
+        await db.commit()
+
+    - name: "Query Optimization"
+      description: "Use only() to select only needed columns"
+      implementation: |
+        # Example:
+        result = await db.execute(
+            select(User.id, User.email, User.full_name)
+            .where(User.role == UserRole.ADMIN)
+        )
+
+    - name: "Read Replicas"
+      description: "Route read queries to read replicas for scaling"
+      implementation: "Configure separate engine for reads in production"
+
+testing:
+  fixtures:
+    db_session:
+      code: |
+        import pytest
+        from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+        from app.infrastructure.persistence.base import Base
+
+        @pytest.fixture
+        async def db_session():
+          """
+          Create a test database session.
+          Uses an in-memory SQLite database for fast tests.
+          """
+          engine = create_async_engine(
+              "sqlite+aiosqlite:///:memory:",
+              echo=False
+          )
+
+          async with engine.begin() as conn:
+              await conn.run_sync(Base.metadata.create_all)
+
+          async_session_maker = async_sessionmaker(
+              engine,
+              class_=AsyncSession,
+              expire_on_commit=False,
+          )
+
+          async with async_session_maker() as session:
+              yield session
+
+          await engine.dispose()

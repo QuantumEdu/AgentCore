@@ -1,0 +1,701 @@
+name: testing
+description: "Módulo de testing con pytest, pytest-asyncio y fixtures completos"
+version: 2.0.0
+
+stack:
+  - "pytest>=7.4.3"
+  - "pytest-asyncio>=0.21.1"
+  - "pytest-cov>=4.1.0"
+  - "httpx>=0.25.2"
+  - "faker>=20.1.0"
+  - "freezegun>=1.4.0"
+  - "playwright>=1.40.0"
+
+dependencies:
+  - auth
+  - database
+
+configuration:
+  pytest:
+    asyncio_mode: "auto"
+    testpaths: ["tests"]
+    python_files: ["test_*.py", "*_test.py"]
+    python_classes: ["Test*"]
+    python_functions: ["test_*"]
+    addopts: >
+      --strict-markers
+      --strict-config
+      --cov=app
+      --cov-report=term-missing
+      --cov-report=html
+      --cov-fail-under=80
+      -v
+    markers:
+      - "slow: marks tests as slow (deselect with '-m \"not slow\"')"
+      - "integration: marks tests as integration tests"
+      - "e2e: marks tests as end-to-end tests"
+      - "unit: marks tests as unit tests"
+      - "auth: marks tests as authentication-related"
+      - "db: marks tests as database-related"
+
+  coverage:
+    minimum: 80
+    omit:
+      - "*/tests/*"
+      - "*/migrations/*"
+      - "*/__init__.py"
+      - "*/conftest.py"
+      - "*/alembic/*"
+
+fixtures:
+  database:
+    db_session:
+      code: |
+        import pytest
+        from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+        from app.infrastructure.persistence.base import Base
+        from typing import AsyncGenerator
+
+        @pytest.fixture
+        async def db_session() -> AsyncGenerator[AsyncSession, None]:
+            """
+            Create a test database session with in-memory SQLite.
+            Creates all tables at the start and drops them at the end.
+            """
+            engine = create_async_engine(
+                "sqlite+aiosqlite:///:memory:",
+                echo=False,
+                future=True
+            )
+
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+
+            async_session_maker = async_sessionmaker(
+                engine,
+                class_=AsyncSession,
+                expire_on_commit=False,
+            )
+
+            async with async_session_maker() as session:
+                yield session
+
+            await engine.dispose()
+
+  http_client:
+    client:
+      code: |
+        import pytest
+        from httpx import AsyncClient, ASGITransport
+        from app.main import app
+        from typing import AsyncGenerator
+
+        @pytest.fixture
+        async def client() -> AsyncGenerator[AsyncClient, None]:
+            """
+            Create an async HTTP client for testing FastAPI endpoints.
+            """
+            async with AsyncClient(
+                transport=ASGITransport(app=app),
+                base_url="http://test"
+            ) as ac:
+                yield ac
+
+  authentication:
+    authenticated_client:
+      code: |
+        import pytest
+        from httpx import AsyncClient, ASGITransport
+        from app.main import app
+        from app.infrastructure.persistence.models import User
+        from app.application.auth.services import PasswordService, JWTService
+        from sqlalchemy.ext.asyncio import AsyncSession
+        from typing import AsyncGenerator
+
+        @pytest.fixture
+        async def authenticated_client(
+            db_session: AsyncSession
+        ) -> AsyncGenerator[AsyncClient, None]:
+            """
+            Create an authenticated client with a test user.
+            """
+            password_service = PasswordService()
+            jwt_service = JWTService()
+
+            # Create test user
+            user = User(
+                email="test@example.com",
+                password_hash=password_service.hash_password("testpassword123"),
+                full_name="Test User",
+                role="user",
+                is_active=True
+            )
+            db_session.add(user)
+            await db_session.commit()
+            await db_session.refresh(user)
+
+            # Create JWT token
+            token = jwt_service.create_access_token({
+                "sub": user.id,
+                "email": user.email,
+                "role": user.role
+            })
+
+            # Create authenticated client
+            async with AsyncClient(
+                transport=ASGITransport(app=app),
+                base_url="http://test",
+                headers={"Authorization": f"Bearer {token}"}
+            ) as ac:
+                yield ac
+
+    admin_client:
+      code: |
+        import pytest
+        from httpx import AsyncClient, ASGITransport
+        from app.main import app
+        from app.infrastructure.persistence.models import User
+        from app.application.auth.services import PasswordService, JWTService
+        from sqlalchemy.ext.asyncio import AsyncSession
+        from typing import AsyncGenerator
+
+        @pytest.fixture
+        async def admin_client(
+            db_session: AsyncSession
+        ) -> AsyncGenerator[AsyncClient, None]:
+            """
+            Create an authenticated client with admin role.
+            """
+            password_service = PasswordService()
+            jwt_service = JWTService()
+
+            # Create admin user
+            admin = User(
+                email="admin@example.com",
+                password_hash=password_service.hash_password("adminpassword123"),
+                full_name="Admin User",
+                role="admin",
+                is_active=True
+            )
+            db_session.add(admin)
+            await db_session.commit()
+            await db_session.refresh(admin)
+
+            # Create JWT token
+            token = jwt_service.create_access_token({
+                "sub": admin.id,
+                "email": admin.email,
+                "role": admin.role
+            })
+
+            # Create authenticated client
+            async with AsyncClient(
+                transport=ASGITransport(app=app),
+                base_url="http://test",
+                headers={"Authorization": f"Bearer {token}"}
+            ) as ac:
+                yield ac
+
+  test_data:
+    test_user:
+      code: |
+        import pytest
+        from sqlalchemy.ext.asyncio import AsyncSession
+        from app.infrastructure.persistence.models import User
+        from app.application.auth.services import PasswordService
+
+        @pytest.fixture
+        async def test_user(db_session: AsyncSession) -> User:
+            """
+            Create a test user in the database.
+            """
+            password_service = PasswordService()
+            user = User(
+                email="test@example.com",
+                password_hash=password_service.hash_password("testpassword123"),
+                full_name="Test User",
+                role="user",
+                is_active=True
+            )
+            db_session.add(user)
+            await db_session.commit()
+            await db_session.refresh(user)
+            return user
+
+    test_admin:
+      code: |
+        import pytest
+        from sqlalchemy.ext.asyncio import AsyncSession
+        from app.infrastructure.persistence.models import User
+        from app.application.auth.services import PasswordService
+
+        @pytest.fixture
+        async def test_admin(db_session: AsyncSession) -> User:
+            """
+            Create a test admin user in the database.
+            """
+            password_service = PasswordService()
+            user = User(
+                email="admin@example.com",
+                password_hash=password_service.hash_password("adminpassword123"),
+                full_name="Admin User",
+                role="admin",
+                is_active=True
+            )
+            db_session.add(user)
+            await db_session.commit()
+            await db_session.refresh(user)
+            return user
+
+    test_order:
+      code: |
+        import pytest
+        from sqlalchemy.ext.asyncio import AsyncSession
+        from app.infrastructure.persistence.models import User, Order, OrderStatus
+        from decimal import Decimal
+
+        @pytest.fixture
+        async def test_order(db_session: AsyncSession, test_user: User) -> Order:
+            """
+            Create a test order in the database.
+            """
+            order = Order(
+                user_id=test_user.id,
+                order_number="TEST-001",
+                status=OrderStatus.PENDING,
+                total_amount=Decimal("100.00"),
+                subtotal=Decimal("90.00"),
+                tax_amount=Decimal("10.00"),
+                discount_amount=Decimal("0.00")
+            )
+            db_session.add(order)
+            await db_session.commit()
+            await db_session.refresh(order)
+            return order
+
+  time:
+    freeze_time:
+      code: |
+        import pytest
+        from freezegun import freeze_time
+        from datetime import datetime, timedelta
+        from typing import Generator
+
+        @pytest.fixture
+        def frozen_time() -> Generator:
+            """
+            Freeze time for testing time-sensitive logic.
+            Default frozen time is 2024-01-01 00:00:00 UTC.
+            """
+            with freeze_time("2024-01-01 00:00:00"):
+                yield
+
+    current_time:
+      code: |
+        import pytest
+        from datetime import datetime, timezone
+
+        @pytest.fixture
+        def current_time() -> datetime:
+            """
+            Get the current time in UTC for consistent testing.
+            """
+            return datetime.now(timezone.utc)
+
+required_tests:
+  authentication:
+    login_success:
+      description: "Test successful login with valid credentials returns JWT tokens"
+      priority: "critical"
+      test_code: |
+        async def test_login_success(client: AsyncClient, test_user: User):
+            response = await client.post(
+                "/api/v1/auth/login",
+                json={
+                    "email": "test@example.com",
+                    "password": "testpassword123"
+                }
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert "access_token" in data
+            assert "refresh_token" in data
+            assert data["token_type"] == "bearer"
+            assert "expires_in" in data
+
+    login_invalid_credentials:
+      description: "Test login with invalid credentials returns 401"
+      priority: "critical"
+      test_code: |
+        async def test_login_invalid_credentials(client: AsyncClient):
+            response = await client.post(
+                "/api/v1/auth/login",
+                json={
+                    "email": "test@example.com",
+                    "password": "wrongpassword"
+                }
+            )
+            assert response.status_code == 401
+            assert "detail" in response.json()
+
+    register_success:
+      description: "Test successful user registration creates user and returns 201"
+      priority: "critical"
+      test_code: |
+        async def test_register_success(client: AsyncClient, db_session: AsyncSession):
+            response = await client.post(
+                "/api/v1/auth/register",
+                json={
+                    "email": "newuser@example.com",
+                    "password": "newpassword123",
+                    "full_name": "New User"
+                }
+            )
+            assert response.status_code == 201
+            data = response.json()
+            assert data["email"] == "newuser@example.com"
+            assert data["full_name"] == "New User"
+            assert data["role"] == "user"
+
+    me_authenticated:
+      description: "Test GET /me with valid token returns user profile"
+      priority: "critical"
+      test_code: |
+        async def test_me_authenticated(authenticated_client: AsyncClient, test_user: User):
+            response = await authenticated_client.get("/api/v1/auth/me")
+            assert response.status_code == 200
+            data = response.json()
+            assert data["id"] == test_user.id
+            assert data["email"] == test_user.email
+            assert data["full_name"] == test_user.full_name
+
+    me_unauthenticated:
+      description: "Test GET /me without token returns 401"
+      priority: "critical"
+      test_code: |
+        async def test_me_unauthenticated(client: AsyncClient):
+            response = await client.get("/api/v1/auth/me")
+            assert response.status_code == 401
+
+    refresh_token:
+      description: "Test token refresh with valid refresh token returns new access token"
+      priority: "high"
+      test_code: |
+        async def test_refresh_token(client: AsyncClient, test_user: User):
+            # First login to get tokens
+            login_response = await client.post(
+                "/api/v1/auth/login",
+                json={
+                    "email": "test@example.com",
+                    "password": "testpassword123"
+                }
+            )
+            tokens = login_response.json()
+            refresh_token = tokens["refresh_token"]
+
+            # Use refresh token to get new access token
+            response = await client.post(
+                "/api/v1/auth/refresh",
+                json={"refresh_token": refresh_token}
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert "access_token" in data
+            assert data["token_type"] == "bearer"
+
+    change_password:
+      description: "Test password change with correct current password"
+      priority: "high"
+      test_code: |
+        async def test_change_password(authenticated_client: AsyncClient):
+            response = await authenticated_client.post(
+                "/api/v1/auth/change-password",
+                json={
+                    "current_password": "testpassword123",
+                    "new_password": "newpassword123"
+                }
+            )
+            assert response.status_code == 200
+            assert "message" in response.json()
+
+    authorization:
+      admin_only_endpoint:
+        description: "Test admin-only endpoint accessible by admin"
+        priority: "critical"
+        test_code: |
+          async def test_admin_endpoint_with_admin(admin_client: AsyncClient):
+              response = await admin_client.get("/api/v1/admin/dashboard")
+              assert response.status_code == 200
+
+      user_forbidden_on_admin:
+        description: "Test admin-only endpoint forbidden for regular user"
+        priority: "critical"
+        test_code: |
+          async def test_admin_endpoint_for_user(authenticated_client: AsyncClient):
+              response = await authenticated_client.get("/api/v1/admin/dashboard")
+              assert response.status_code == 403
+
+  database:
+    create_user:
+      description: "Test creating a user in database"
+      priority: "critical"
+      test_code: |
+        async def test_create_user(db_session: AsyncSession):
+            from app.application.auth.services import PasswordService
+            password_service = PasswordService()
+
+            user = User(
+                email="dbtest@example.com",
+                password_hash=password_service.hash_password("password123"),
+                full_name="DB Test User",
+                role="user"
+            )
+            db_session.add(user)
+            await db_session.commit()
+            await db_session.refresh(user)
+
+            assert user.id is not None
+            assert user.email == "dbtest@example.com"
+
+    soft_delete:
+      description: "Test soft delete functionality"
+      priority: "high"
+      test_code: |
+        async def test_soft_delete(db_session: AsyncSession, test_user: User):
+            from sqlalchemy import select
+
+            # Soft delete the user
+            test_user.soft_delete()
+            await db_session.commit()
+            await db_session.refresh(test_user)
+
+            assert test_user.is_deleted is True
+            assert test_user.deleted_at is not None
+
+            # Verify it's not in normal queries
+            result = await db_session.execute(
+                select(User).where(User.email == test_user.email)
+            )
+            assert result.scalar_one_or_none() is None
+
+    relationships:
+      description: "Test ORM relationships work correctly"
+      priority: "high"
+      test_code: |
+        async def test_user_orders_relationship(
+            db_session: AsyncSession,
+            test_user: User,
+            test_order: Order
+        ):
+            from sqlalchemy import select
+
+            # Load user with orders
+            result = await db_session.execute(
+                select(User)
+                .where(User.id == test_user.id)
+            )
+            user = result.scalar_one()
+
+            assert len(user.orders) == 1
+            assert user.orders[0].id == test_order.id
+
+  api:
+    pagination:
+      description: "Test API pagination works correctly"
+      priority: "medium"
+      test_code: |
+        async def test_list_users_pagination(authenticated_client: AsyncSession, db_session: AsyncSession):
+            # Create multiple users
+            from app.application.auth.services import PasswordService
+            password_service = PasswordService()
+
+            for i in range(15):
+                user = User(
+                    email=f"user{i}@example.com",
+                    password_hash=password_service.hash_password("password123"),
+                    full_name=f"User {i}",
+                    role="user"
+                )
+                db_session.add(user)
+            await db_session.commit()
+
+            # Test first page
+            response = await authenticated_client.get("/api/v1/users?skip=0&limit=10")
+            assert response.status_code == 200
+            data = response.json()
+            assert len(data["items"]) == 10
+            assert data["total"] >= 15
+            assert data["page"] == 1
+
+    validation:
+      description: "Test request validation returns 422 for invalid data"
+      priority: "medium"
+      test_code: |
+        async def test_register_validation(client: AsyncClient):
+            # Missing required fields
+            response = await client.post(
+                "/api/v1/auth/register",
+                json={
+                    "email": "test@example.com"
+                    # missing password and full_name
+                }
+            )
+            assert response.status_code == 422
+
+            # Invalid email format
+            response = await client.post(
+                "/api/v1/auth/register",
+                json={
+                    "email": "not-an-email",
+                    "password": "password123",
+                    "full_name": "Test User"
+                }
+            )
+            assert response.status_code == 422
+
+e2e_testing:
+  playwright:
+    setup:
+      code: |
+        # conftest.py
+        import pytest
+        from playwright.async_api import async_playwright, Browser, Page
+
+        @pytest.fixture(scope="session")
+        async def browser():
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=True)
+                yield browser
+                await browser.close()
+
+        @pytest.fixture
+        async def page(browser: Browser):
+            page = await browser.new_page()
+            yield page
+            await page.close()
+
+    test_examples:
+      login_flow:
+        description: "Test complete login flow in browser"
+        code: |
+          @pytest.mark.e2e
+          async def test_login_flow(page: Page):
+              await page.goto("http://localhost:8000/login")
+
+              # Fill login form
+              await page.fill('input[name="email"]', "test@example.com")
+              await page.fill('input[name="password"]', "testpassword123")
+              await page.click('button[type="submit"]')
+
+              # Wait for redirect to dashboard
+              await page.wait_for_url("**/dashboard")
+
+              # Verify user is logged in
+              user_email = await page.text_content(".user-email")
+              assert user_email == "test@example.com"
+
+      create_order_flow:
+        description: "Test complete order creation flow"
+        code: |
+          @pytest.mark.e2e
+          async def test_create_order_flow(page: Page):
+              await page.goto("http://localhost:8000/orders/new")
+
+              # Fill order form
+              await page.fill('input[name="customer_name"]', "John Doe")
+              await page.fill('input[name="customer_email"]', "john@example.com")
+
+              # Add item to order
+              await page.click('button[name="add_item"]')
+              await page.select_option('select[name="product_id"]', "1")
+              await page.fill('input[name="quantity"]', "2")
+
+              # Submit order
+              await page.click('button[type="submit"]')
+
+              # Wait for success message
+              await page.wait_for_selector(".alert-success")
+
+              # Verify order was created
+              order_number = await page.text_content(".order-number")
+              assert order_number is not None
+
+      htmx_interactions:
+        description: "Test HTMX interactions work correctly"
+        code: |
+          @pytest.mark.e2e
+          async def test_htmx_search(page: Page):
+              await page.goto("http://localhost:8000/products")
+
+              # Type in search box
+              search_box = await page.query_selector('input[name="search"]')
+              await search_box.fill("laptop")
+
+              # Wait for HTMX response (debounce + network)
+              await page.wait_for_timeout(500)
+
+              # Verify results were updated
+              results = await page.query_selector_all(".product-item")
+              assert len(results) > 0
+
+test_coverage:
+  requirements:
+    minimum_coverage: 80
+    coverage_by_module:
+      app/application/usecases: 85
+      app/adapters/http: 80
+      app/infrastructure/persistence: 75
+
+  reporting:
+    html_report: "htmlcov/index.html"
+    terminal_report: "term-missing"
+    fail_under: 80
+
+  exclusions:
+    - "*/tests/*"
+    - "*/migrations/*"
+    - "*/__init__.py"
+    - "*/conftest.py"
+    - "*/alembic/*"
+    - "app/main.py"  # Entry point, usually low value to test
+
+test_commands:
+  run_all:
+    command: "pytest"
+    description: "Run all tests with coverage"
+
+  run_unit:
+    command: "pytest -m unit"
+    description: "Run only unit tests"
+
+  run_integration:
+    command: "pytest -m integration"
+    description: "Run only integration tests"
+
+  run_e2e:
+    command: "pytest -m e2e"
+    description: "Run only end-to-end tests with Playwright"
+
+  run_fast:
+    command: "pytest -m 'not slow'"
+    description: "Run tests excluding slow ones"
+
+  run_coverage:
+    command: "pytest --cov=app --cov-report=html --cov-report=term-missing"
+    description: "Run tests with coverage report"
+
+  run_specific_file:
+    command: "pytest tests/test_auth.py"
+    description: "Run tests in a specific file"
+
+  run_specific_test:
+    command: "pytest tests/test_auth.py::test_login_success"
+    description: "Run a specific test function"
+
+  verbose:
+    command: "pytest -vv"
+    description: "Run tests with verbose output"
+
+  stop_on_first_failure:
+    command: "pytest -x"
+    description: "Stop on first test failure"

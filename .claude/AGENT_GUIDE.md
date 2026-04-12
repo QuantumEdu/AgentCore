@@ -16,7 +16,107 @@ This guide documents the available agents and their **MANDATORY WORKFLOW** to pr
 
 ---
 
+## Skills Directory (.agent/skills/)
+
+AgentCore v2.0 incluye un sistema de skills reutilizables ubicados en `.agent/skills/`. Los skills son programas especializados que ejecutan tareas específicas.
+
+### Skills Principales
+
+1. **brief-to-prd**: Generador interactivo de PRDs desde PROJECT-BRIEF-FULL.yaml
+   - Ubicación: `.agent/skills/brief-to-prd/`
+   - Función: Lee el Brief, pregunta secciones faltantes, detecta stack, genera PRD + stack_config.yml
+   - Comando único: Genera ambos artefactos en una ejecución
+
+2. **stack-generator**: Generador de configuración de stack
+   - Ubicación: `.agent/skills/stack-generator/`
+   - Función: Convierte PROJECT-BRIEF-FULL.yaml a stack_config.yml
+   - Soporta: Next.js 15, Go+Wails, FastAPI (3 sub-stacks)
+
+### Uso de Skills
+
+Los skills se activan automáticamente cuando el usuario ciertos triggers:
+- "genera PRD desde brief"
+- "del brief al PRD"
+- "interpreta mi brief"
+- O cuando se detecta un PROJECT-BRIEF-FULL.yaml
+
+Los skills delegan la generación del PRD a skills específicos del stack (prd-nextjs15, prd-fastapi, prd-go-wails).
+
+---
+
+## Multi-Stack Support
+
+AgentCore v2.0 soporta múltiples stacks tecnológicos, cada uno con su propia configuración:
+
+### Stacks Disponibles
+
+1. **Next.js 15** (`.claude/stacks/nextjs15/`)
+   - React 19 + Prisma + NextAuth
+   - Ideal para: SaaS web modernos, dashboards
+
+2. **Go + Wails** (`.claude/stacks/go-wails/`)
+   - Backend Go + Desktop nativo
+   - Ideal para: POS, apps instalables, sistemas con hardware
+
+3. **FastAPI** (`.claude/stacks/fastapi/`)
+   - Python async con 3 sub-stacks:
+     - Stack A (SSR): Jinja2 + HTMX + PicoCSS
+     - Stack B (SPA): React 18 + MUI + Zustand
+     - Stack C (Desktop): PyWebview + PyInstaller
+   - Ideal para: Sistemas médicos, de datos, apps internas
+
+### Configuración por Stack
+
+Cada stack tiene su propia configuración en `.claude/stacks/{stack}/config.yaml`:
+- Decisiones técnicas automáticas
+- Patrones de código específicos
+- Módulos reutilizables (auth, database, testing, frontend, hardware)
+- Estructura de directorios
+- Comandos de ejecución
+
+### Cambio de Stack
+
+Para cambiar de stack, usa el script `stack_selector.py`:
+```bash
+python .claude/scripts/stack_selector.py
+```
+
+O modifica `PROJECT-BRIEF-FULL.yaml` y usa el skill `brief-to-prd`.
+
+---
+
 ## Available Agents
+
+Los agentes en AgentCore v2.0 son ahora **stack-aware**, lo que significa que validan la configuración contra el stack seleccionado.
+
+### Archivos de Lectura Obligatoria
+
+Cada agente tiene una lista de `required_files` que incluye:
+1. `MANDATORY_CHECKS.md` (siempre primero)
+2. `stack_config.yml` (configuración dinámica del stack activo)
+3. `.claude/stacks/{stack}/config.yaml` (configuración específica del stack)
+4. `rules/architecture.rules`
+5. `rules/database.rules`
+6. `rules/security.rules`
+
+### Validación Stack-Aware
+
+Los agentes ahora verifican que:
+- El stack seleccionado en `stack_config.yml` es válido
+- Las decisiones técnicas (auth, ORM, etc.) coinciden con el stack
+- No hay inconsistencias entre el Brief y el stack_config
+
+### Ejemplo
+
+Si el stack seleccionado es FastAPI:
+- ✅ Acepta: Argon2id, SQLAlchemy 2.0, uv
+- ❌ Rechaza: bcrypt, SQLAlchemy 1.4, pip
+
+Si el stack seleccionado es Next.js 15:
+- ✅ Acepta: NextAuth, Prisma, pnpm
+- ❌ Rechaza: JWT manual, GORM, npm
+
+---
 
 ### 1. architect.agent v1.3
 
@@ -199,6 +299,6 @@ from passlib.context import CryptContext  # FORBIDDEN
 
 ---
 
-**VERSION**: 1.3
-**LAST UPDATED**: 2026-04-05
-**PROJECT**: FlowTask Inc. - Task Management Platform
+**VERSION**: 2.0
+**LAST UPDATED**: 2026-04-12
+**PROJECT**: AgentCore v2.0 - Multi-Stack Agent System

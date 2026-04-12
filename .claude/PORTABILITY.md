@@ -1,9 +1,9 @@
 # .claude/PORTABILITY.md
 # Portability Guide - AgentCore Template v1.3
 
-**VERSION**: 1.3
-**DATE**: 2026-04-05
-**CURRENT PROJECT**: FlowTask Inc. - Task Management Platform
+**VERSION**: 2.0
+**DATE**: 2026-04-12
+**CURRENT PROJECT**: AgentCore v2.0 - Multi-Stack Agent System
 
 ---
 
@@ -18,48 +18,71 @@ This template provides a `.claude/` infrastructure that **PREVENTS common omissi
 
 ---
 
-## Files That MUST BE ADAPTED per Project
+## Files That MUST BE ADAPTED
 
-When reusing this template in a new project, the following files **MUST** be modified:
-
-### Always Adapt (project-specific)
-
-| File | What to Change |
+| File | What to change |
 |------|---------------|
-| `stack_config.json` | Name, type, scale, tables, enums, roles, terminology, business rules |
-| `rules/architecture.rules` | Project name, directory structure, domain models, schemas, endpoints |
-| `rules/database.rules` | Project name, tables, relationships, enums, naming conventions, specific decisions |
-| `rules/security.rules` | Project name, roles (UserRole enum), permission matrix, protected endpoints |
-| `rules/api-design.rules` | Project name, endpoints, schemas, request/response examples |
-| `rules/testing.rules` | Project name, test structure, fixtures, test examples |
-| `rules/discovery.rules` | Project name, stack and decision examples |
-| `memory/decision_log.json` | Reset with new project decisions |
-| `memory/audit_log.md` | Reset with new project name |
-| `memory/backlog/roadmap.md` | Rewrite with new project milestones |
-| `AGENT_GUIDE.md` | Project name, specific roles if they change |
+| `.claude/stacks/{stack}/config.yaml` | EVERYTHING stack-specific |
+| `.claude/stacks/{stack}/decisions.yaml` | Technical decisions with rationale |
+| `.claude/stacks/{stack}/patterns.md` | Code patterns with examples |
+| `.claude/stacks/{stack}/modules/*.yaml` | Domain-specific modules (auth, database, etc.) |
+| `.claude/stacks/{stack}/prd_skill.md` | Update with domain-specific details |
+| `.claude/memory/decision_log.md` | Reset with your decisions |
+| `.claude/memory/audit_log.md` | Reset with your project name |
+| `.claude/memory/backlog/roadmap.md` | Rewrite for your milestones |
+| `AGENT_GUIDE.md` | Update for your project |
+| `MANDATORY_CHECKS.md` | Update for your project |
+| `PROJECT-BRIEF-FULL.yaml` | Fill with your project details |
 
 ### Generally Reusable (minimal changes)
 
 | File | What to Review |
 |------|---------------|
-| `MANDATORY_CHECKS.md` | Only verify compatibility tables apply |
+| `rules/architecture.rules` | Update project name and domain models |
+| `rules/database.rules` | Update table names and relationships |
+| `rules/security.rules` | Update roles and permissions |
+| `rules/api-design.rules` | Update endpoints and schemas |
+| `rules/testing.rules` | Update fixtures and test examples |
 | `PORTABILITY.md` | Update version, date, project name |
-| `validators/check_stack.py` | Works if stack_config.json is configured correctly |
-| `validators/check_dependencies.py` | Same |
 
-### Reusable Without Changes
+### Files You Can Reuse Unchanged
 
-| File | Reason |
-|------|--------|
-| `agents/architect.agent` | Generic validation logic |
-| `agents/backend-developer.agent` | Dynamically reads stack_config.json |
-| `agents/security-expert.agent` | Generic stack enforcement |
-| `swarms/discovery_swarm.yaml` | Generic workflow |
-| `swarms/agile_cycle.yaml` | Generic workflow |
-| `swarms/create-module.yaml` | Generic template |
-| `swarms/add-endpoint.yaml` | Generic template |
-| `swarms/write-tests.yaml` | Generic template |
-| `swarms/kaizen_improvement.yaml` | Generic workflow |
+| File | Why |
+|------|-----|
+| `.claude/stacks/template.yaml` | Generic template for new stacks |
+| `.claude/stacks/registry.yaml` | Registry of all available stacks |
+| `.agent/skills/brief-to-prd/SKILL.md` | Generic PRD generator (stack-agnostic) |
+| `.agent/skills/stack-generator/SKILL.md` | Generic config generator (multi-stack) |
+| `.claude/rules/patterns/*` | Reusable patterns (hexagonal, SOLID, design, testing) |
+| `.claude/scripts/*` | Utility scripts (stack-agnostic) |
+| `.claude/templates/*` | Reusable templates (Brief, ADR, roadmap) |
+
+---
+
+## Stack Configuration
+
+AgentCore v2.0 uses a dynamic stack configuration system:
+
+### Single stack_config.yml
+
+Instead of multiple stack-specific files, v2.0 uses a single `stack_config.yml` that:
+- References the selected stack from `.claude/stacks/{stack}/`
+- Contains project-specific overrides
+- Is auto-generated from `PROJECT-BRIEF-FULL.yaml`
+
+### Stack Selection
+
+To select a stack:
+1. Fill `PROJECT-BRIEF-FULL.yaml` with your `stack_principal`
+2. Run: `python .claude/scripts/stack_selector.py`
+3. Or use the `brief-to-prd` skill (auto-detects from Brief)
+
+### Multi-Stack Projects
+
+For projects that need multiple stacks (e.g., web + desktop):
+1. Create multiple `PROJECT-BRIEF-FULL-{stack}.yaml` files
+2. Generate separate PRDs and configs for each
+3. Use branch strategies or monorepo to manage both
 
 ---
 

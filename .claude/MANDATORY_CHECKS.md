@@ -13,7 +13,18 @@ This file MUST be read by ANY agent or user BEFORE:
 
 ---
 
-## STEP 0: File Path Header (REQUIRED v1.3)
+## STEP 0: Verificación de Stack
+
+- [ ] Existe `.claude/stack_config.yml`?
+  - Si NO: Ejecuta `python .claude/scripts/stack_selector.py`
+- [ ] ¿El stack en `stack_config.yml` coincide con tus necesidades?
+  - Si NO: Ejecuta `python .claude/scripts/stack_selector.py` para cambiarlo
+- [ ] Existe `.claude/stacks/{stack}/config.yaml`?
+  - Si NO: El stack no está configurado correctamente, revisa la instalación
+
+---
+
+## STEP 1: File Path Header (REQUIRED v1.3)
 
 **Every file created MUST contain its full path as a comment on the first line.**
 
@@ -30,7 +41,7 @@ This file MUST be read by ANY agent or user BEFORE:
 
 ---
 
-## STEP 1: Read stack_config.json (MANDATORY)
+## STEP 2: Read stack_config.json (MANDATORY)
 
 ```bash
 cat .claude/stack_config.json
@@ -51,7 +62,7 @@ Verify ALL these fields before coding:
 
 ---
 
-## STEP 2: Verify Compatibilities
+## STEP 3: Verify Compatibilities
 
 ### Password Hashing Compatibility Table
 
@@ -76,7 +87,7 @@ Verify ALL these fields before coding:
 
 ---
 
-## STEP 3: Pre-Implementation Checklist
+## STEP 4: Pre-Implementation Checklist
 
 Before writing ANY code, answer:
 
@@ -106,7 +117,7 @@ Before writing ANY code, answer:
 
 ---
 
-## STEP 4: Verification Commands
+## STEP 5: Verification Commands
 
 Run BEFORE implementing:
 
@@ -167,6 +178,6 @@ If these checks are skipped:
 
 ---
 
-**VERSION**: 1.3
-**LAST UPDATED**: 2026-04-05
-**PROJECT**: FlowTask Inc. - Task Management Platform
+**VERSION**: 2.0
+**LAST UPDATED**: 2026-04-12
+**PROJECT**: AgentCore v2.0 - Multi-Stack Agent System

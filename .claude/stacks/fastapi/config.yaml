@@ -1,0 +1,311 @@
+---
+# FastAPI Stack Configuration
+# Stack principal y más completo del sistema
+
+stack:
+  name: "FastAPI + Python"
+  version: "2.0"
+  description: "Python async con FastAPI 0.115+, SQLAlchemy 2.0, y 3 sub-stacks: SSR (Jinja2+HTMX), SPA (React+MUI), Desktop (PyWebview)"
+  
+  triggers:
+    - "[x] FastAPI"
+    - "[x] Python"
+    - "FastAPI"
+    - "SQLAlchemy"
+    - "Pydantic"
+    - "Alembic"
+    - "Jinja2"
+    - "HTMX"
+    - "PyWebview"
+    - "VitaCare"
+    - "VetCare"
+    - "Clínica"
+  
+  brief_mapping:
+    project_type:
+      "web_saas": "web_saaS"
+      "app_desktop": "desktop_app"
+      "api_backend": "api_backend"
+    
+    criticalidad:
+      "low": {"scale": "small", "testing_coverage": 70}
+      "medium": {"scale": "small", "testing_coverage": 80}
+      "high": {"scale": "medium", "testing_coverage": 80}
+      "critical": {"scale": "large", "testing_coverage": 90}
+  
+  automatic_decisions:
+    package_manager:
+      name: "uv"
+      rationale: "Faster than pip, better lock files, modern standard for Python 2024+"
+      commands:
+        install: "uv pip install"
+        add: "uv pip add {package}"
+        dev: "uvicorn app.main:app --reload"
+        test: "pytest"
+        build: "docker build -t app ."
+      alternatives_rejected: ["pip", "pipenv", "poetry"]
+      rejection_reason: "pip is slow, pipenv is outdated, poetry has lock file issues. uv is the modern choice."
+    
+    ids:
+      value: "autoincrement"
+      rationale: "Simpler for v1, can migrate to UUID in v2 if needed"
+      forbidden: ["uuid", "cuid"]
+      forbidden_reason: "UUIDs add complexity for v1. Use autoincrement integers for simplicity."
+    
+    orm:
+      name: "SQLAlchemy"
+      version: "2.0"
+      syntax: "Mapped[] and mapped_column (modern syntax)"
+      rationale: "Type-safe, async-ready, industry standard for Python"
+      migrations: "Alembic"
+      forbidden: ["SQLAlchemy 1.4 legacy", "Django ORM", "Tortoise ORM"]
+      forbidden_reason: "Legacy syntax deprecated. Django ORM tied to framework. Tortoise ORM less mature."
+    
+    auth:
+      method: "JWT"
+      library: "python-jose[cryptography]"
+      token_type: "Bearer"
+      storage: "HttpOnly Cookie (SSR) or Headers (SPA)"
+      hash: "argon2id"
+      hash_package: "argon2-cffi"
+      hash_rationale: "PHC winner 2015, GPU/ASIC resistant, stronger than bcrypt"
+      forbidden_hashes: ["md5", "sha1", "sha256", "bcrypt"]
+      forbidden_reason: "md5/sha1/sha256 are too fast. bcrypt is good but argon2id is better (memory-hard)."
+    
+    frontend:
+      ssr:
+        framework: "Jinja2 3.1+"
+        css: "PicoCSS 2.x"
+        interactivity: "HTMX 2.0"
+        rationale: "No build step, simple, fast for internal apps"
+      spa:
+        framework: "React 18 + TypeScript 5"
+        css: "MUI v6"
+        state: "Zustand v4"
+        fetching: "TanStack Query v5"
+        rationale: "Rich UI, component library, modern SPA"
+      desktop:
+        framework: "PyWebview"
+        css: "Same as chosen (SSR or SPA)"
+        packaging: "PyInstaller"
+        rationale: "Native window, Python backend, single executable"
+    
+    database:
+      dev: "SQLite (aiosqlite)"
+      prod: "PostgreSQL 16+"
+      rationale: "SQLite zero-config for dev, PostgreSQL for production"
+      soft_delete: true
+      forbidden: ["MySQL", "MongoDB for v1"]
+      forbidden_reason: "MySQL has quirks. MongoDB is overkill for v1 relational data."
+    
+    testing:
+      framework: "pytest"
+      async: "pytest-asyncio"
+      coverage_minimum: 80
+      focus: "unit tests on usecases/ only"
+      e2e: "Playwright (optional)"
+      rationale: "pytest is the standard, pytest-asyncio for FastAPI async handlers"
+    
+    code_quality:
+      linter: "ruff"
+      formatter: "ruff format"
+      type_checker: "mypy or pyright"
+      rationale: "ruff replaces flake8+isort+black, 10-100x faster. mypy/pyright for type safety"
+    
+    deployment:
+      platforms:
+        - name: "Docker Compose"
+          commands: ["docker-compose up -d"]
+          containerized: true
+        
+        - name: "GitHub Actions + Docker"
+          commands: ["docker build", "docker push", "kubectl apply"]
+          containerized: true
+        
+        - name: "PyInstaller (Desktop)"
+          commands: ["pyinstaller --onefile --windowed main.py"]
+          containerized: false
+  
+  patterns:
+    - name: "Repository Pattern"
+      file: "patterns.md#repository"
+      mandatory: true
+      rationale: "Abstrae el acceso a datos, facilita testing y cambio de ORM"
+    
+    - name: "Factory Pattern"
+      file: "patterns.md#factory"
+      mandatory: false
+      rationale: "Construcción de tickets, reportes, facturas"
+    
+    - name: "Strategy Pattern"
+      file: "patterns.md#strategy"
+      mandatory: false
+      rationale: "Métodos de pago (efectivo, tarjeta, transferencia)"
+    
+    - name: "Observer/Event Pattern"
+      file: "patterns.md#observer"
+      mandatory: false
+      rationale: "Orden creada → notificar KDS, descontar inventario, auditoría"
+    
+    - name: "Value Object"
+      file: "patterns.md#value_object"
+      mandatory: false
+      rationale: "Email, Dinero, RFC, CURP con validación incorporada"
+  
+  modules:
+    - name: "auth"
+      path: "modules/auth.yaml"
+      mandatory: true
+    
+    - name: "database"
+      path: "modules/database.yaml"
+      mandatory: true
+    
+    - name: "testing"
+      path: "modules/testing.yaml"
+      mandatory: true
+    
+    - name: "frontend"
+      path: "modules/frontend.yaml"
+      mandatory: true
+    
+    - name: "hardware"
+      path: "modules/hardware.yaml"
+      mandatory: false
+  
+  directory_structure:
+    - "app/"
+    - "app/domain/"
+    - "app/domain/entities/"
+    - "app/domain/value_objects/"
+    - "app/domain/events/"
+    - "app/domain/exceptions.py"
+    - "app/application/"
+    - "app/application/ports/"
+    - "app/application/use_cases/"
+    - "app/infrastructure/"
+    - "app/infrastructure/persistence/"
+    - "app/infrastructure/persistence/models.py"
+    - "app/infrastructure/email/"
+    - "app/adapters/"
+    - "app/adapters/http/"
+    - "app/adapters/desktop/"
+    - "tests/"
+    - "tests/use_cases/"
+    - "alembic/versions/"
+    - "docs/"
+  
+  commands:
+    install: "uv pip install"
+    dev: "uvicorn app.main:app --reload"
+    test: "pytest"
+    test_coverage: "pytest --cov=app --cov-report=html"
+    lint: "ruff check app/"
+    format: "ruff format app/"
+    type_check: "mypy app/"
+    db_migrate: "alembic upgrade head"
+    db_rollback: "alembic downgrade -1"
+    db_create_migration: "alembic revision --autogenerate -m 'message'"
+  
+  dependencies:
+    backend:
+      runtime: "Python 3.12+"
+      framework: "FastAPI 0.115+"
+      orm: "SQLAlchemy 2.0"
+      async: "asyncio + anyio"
+      auth: "python-jose[cryptography] + argon2-cffi"
+      validation: "Pydantic v2"
+      testing: "pytest + pytest-asyncio + pytest-cov"
+      
+    frontend_ssr:
+      template: "Jinja2 3.1+"
+      css: "PicoCSS 2.x (CDN)"
+      interactivity: "HTMX 2.0 (CDN)"
+      
+    frontend_spa:
+      framework: "React 18 + TypeScript 5"
+      bundler: "Vite 5"
+      ui: "MUI v6"
+      state: "Zustand v4"
+      fetching: "TanStack Query v5"
+      forms: "React Hook Form + Zod"
+      
+    frontend_desktop:
+      shell: "PyWebview 4+"
+      packaging: "PyInstaller"
+    
+    devtools:
+      package_manager: "uv"
+      linter: "ruff"
+      formatter: "ruff format"
+      type_checker: "mypy or pyright"
+      migrations: "Alembic 1.13+"
+  
+  deployment:
+    platforms:
+      - name: "Docker Compose (Development)"
+        commands: ["docker-compose up -d", "docker-compose logs -f"]
+        containerized: true
+        docker_compose: true
+      
+      - name: "Docker + Kubernetes (Production)"
+        commands: ["docker build -t app:latest", "docker push registry/app:latest", "kubectl apply -f k8s/"]
+        containerized: true
+        kubernetes: true
+      
+      - name: "PyInstaller (Desktop - Stack C)"
+        commands: ["pyinstaller --onefile --windowed --icon=icon.ico --name=MyApp app/desktop/main.py"]
+        containerized: false
+        standalone: true
+  
+  business_rules:
+    - "Usar Argon2id para hashear contraseñas, nunca bcrypt u otros algoritmos"
+    - "Usar SQLAlchemy 2.0 con sintaxis Mapped[] y mapped_column, nunca Column() legacy"
+    - "Todas las entidades principales tienen soft delete (deleted_at), nunca hard delete"
+    - "Use Cases están en app/application/use_cases/, Domain en app/domain/, separados de infraestructura"
+    - "Tests unitarios solo en tests/use_cases/, no testear FastAPI handlers directamente"
+    - "Usar ruff para linting y formatting, reemplaza flake8, isort, black"
+    - "Para Stack A: Usar HTMX para interactividad, no React ni JavaScript manual"
+    - "Para Stack B: Usar React 18 + MUI, con TanStack Query para data fetching"
+    - "Para Stack C: Usar PyWebview con PyInstaller para empaquetar como .exe"
+  
+  optional_sections_handling:
+    domain_modeling:
+      enabled: true
+      approach: "ddd_lite"
+      complexity_threshold: 4
+    
+    consistencia_transacciones:
+      enabled: true
+      approach: "ac Transactions (async with db.begin())"
+      complexity_threshold: 7
+    
+    resiliencia_fallos:
+      enabled: true
+      strategies: ["retry", "timeout"]
+      complexity_threshold: 7
+    
+    performance_escabilidad:
+      enabled: true
+      metrics: ["latency_p95", "db_query_time"]
+      complexity_threshold: 9
+    
+    modelo_errores:
+      enabled: true
+      formato: "custom (Pydantic models)"
+      complexity_threshold: 4
+    
+    configuracion_secretos:
+      enabled: true
+      approach: "Pydantic BaseSettings + .env"
+      complexity_threshold: 7
+    
+    ux_flujos:
+      enabled: true
+      approach: "user journeys por módulo"
+      complexity_threshold: 4
+    
+    data_lifecycle:
+      enabled: true
+      approach: "soft delete + retención por compliance"
+      complexity_threshold: 9

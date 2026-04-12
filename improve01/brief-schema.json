@@ -1,0 +1,940 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PROJECT-BRIEF Schema",
+  "description": "Schema para validar PROJECT-BRIEF-FULL.yaml - Template completo para AgentCore v2.0",
+  "type": "object",
+  "required": [
+    "nombre",
+    "tipo_entrega",
+    "stack_principal",
+    "criticalidad",
+    "team_size",
+    "timeframe",
+    "arquitectura"
+  ],
+  "properties": {
+    "nombre": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre del sistema/proyecto"
+    },
+    "tipo_entrega": {
+      "type": "string",
+      "enum": ["web_saas", "app_desktop", "hibrido", "api_backend"],
+      "description": "Tipo de entrega del sistema"
+    },
+    "stack_principal": {
+      "type": "string",
+      "enum": ["nextjs15", "go_wails", "fastapi_ssr", "fastapi_spa", "fastapi_desktop"],
+      "description": "Stack tecnológico principal"
+    },
+    "criticalidad": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Nivel de criticidad del sistema"
+    },
+    "team_size": {
+      "type": "string",
+      "enum": ["1", "2-5", "6-15", "15+"],
+      "description": "Tamaño del equipo de desarrollo"
+    },
+    "timeframe": {
+      "type": "string",
+      "enum": ["mvp-2sem", "short-1mes", "medium-3mes", "long-6mes+"],
+      "description": "Plazo de desarrollo estimado"
+    },
+    "arquitectura": {
+      "type": "object",
+      "description": "Configuración arquitectónica y límites de dominio",
+      "required": ["patron", "bounded_contexts", "tipo_ejecucion"],
+      "properties": {
+        "patron": {
+          "type": "string",
+          "enum": [
+            "hexagonal",
+            "clean_architecture",
+            "capas_fastapi",
+            "otro"
+          ],
+          "description": "Patrón arquitectónico adoptado"
+        },
+        "patron_otro": {
+          "type": "string",
+          "description": "Descripción de patrón alternativo (solo si patron='otro')"
+        },
+        "bounded_contexts": {
+          "type": "array",
+          "description": "Módulos core o bounded contexts",
+          "items": {
+            "type": "string",
+            "enum": [
+              "auth-users",
+              "catalog-products",
+              "orders-sales",
+              "inventory",
+              "reporting",
+              "notifications",
+              "otro"
+            ]
+          },
+          "minItems": 1
+        },
+        "bounded_contexts_otro": {
+          "type": "string",
+          "description": "Bounded contexts adicionales"
+        },
+        "tipo_ejecucion": {
+          "type": "string",
+          "enum": ["sync", "async", "event-driven", "hybrid", "streaming"],
+          "description": "Modelo de ejecución de procesos"
+        },
+        "ejecucion_justificacion": {
+          "type": "string",
+          "description": "Justificación del modelo de ejecución elegido"
+        }
+      }
+    },
+    "datos": {
+      "type": "object",
+      "description": "Estrategia de datos, bases de datos, ORM, cache",
+      "required": ["db_dev", "db_prod", "orm", "ids", "cache", "retencion"],
+      "properties": {
+        "db_dev": {
+          "type": "string",
+          "enum": ["sqlite", "docker_postgres", "mongodb_atlas", "none"],
+          "description": "Base de datos para desarrollo/local"
+        },
+        "db_prod": {
+          "type": "string",
+          "enum": ["postgresql", "mysql", "mongodb", "dynamodb", "none"],
+          "description": "Base de datos para producción"
+        },
+        "orm": {
+          "type": "string",
+          "enum": ["prisma", "gorm", "sqlalchemy"],
+          "description": "ORM y sistema de migraciones"
+        },
+        "ids": {
+          "type": "string",
+          "enum": ["cuid", "uuid", "auto_increment"],
+          "description": "Estrategia de generación de IDs"
+        },
+        "cache_server": {
+          "type": "string",
+          "enum": ["redis", "in-memory", "none"],
+          "description": "Servidor de cache"
+        },
+        "estado_cliente": {
+          "type": "string",
+          "enum": ["zustand", "react_context", "redux_toolkit", "none"],
+          "description": "Estado global en cliente"
+        },
+        "data_fetching": {
+          "type": "string",
+          "enum": ["tanstack_query", "swr", "htmx", "server_components"],
+          "description": "Estrategia de data fetching"
+        },
+        "retencion_dias": {
+          "type": "number",
+          "enum": [30, 90, 180, 365],
+          "description": "Días de retención de datos"
+        },
+        "retencion_indefinida": {
+          "type": "boolean",
+          "description": "Retención indefinida de datos"
+        },
+        "soft_delete": {
+          "type": "boolean",
+          "description": "Usar soft-delete en lugar de eliminación física"
+        },
+        "backup": {
+          "type": "string",
+          "enum": ["automated-daily", "point-in-time", "manual"],
+          "description": "Estrategia de backup"
+        }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "description": "Frontend, UI y tiempo real",
+      "required": ["renderizado", "validacion", "tiempo_real"],
+      "properties": {
+        "renderizado": {
+          "type": "string",
+          "enum": ["react19", "jinja2_htmx", "react18_mui", "wails_webview", "pywebview"],
+          "description": "Estrategia de renderizado de interfaz"
+        },
+        "validacion": {
+          "type": "string",
+          "enum": ["zod", "pydantic", "go_validator", "htmx_native"],
+          "description": "Framework de validación de formularios"
+        },
+        "tiempo_real": {
+          "type": "string",
+          "enum": ["socketio", "websocket", "sse", "htmx_polling", "none"],
+          "description": "Estrategia de comunicación en tiempo real"
+        }
+      }
+    },
+    "contratos_apis": {
+      "type": "object",
+      "description": "Contratos, APIs y documentación",
+      "required": ["especificacion_api", "puertos"],
+      "properties": {
+        "especificacion_api": {
+          "type": "string",
+          "enum": ["openapi", "swagger", "fastapi_docs", "nextjs_routes", "none"],
+          "description": "Especificación de API"
+        },
+        "api_ubicacion": {
+          "type": "string",
+          "description": "Ubicación de documentación API (./specs/, ./docs/, inline, URL externa)"
+        },
+        "puertos_inbound": {
+          "type": "array",
+          "description": "Puertos de entrada",
+          "items": {
+            "type": "string",
+            "enum": ["http_rest", "server_actions", "websocket", "htmx", "cli"]
+          },
+          "minItems": 1
+        },
+        "puertos_outbound": {
+          "type": "array",
+          "description": "Puertos de salida",
+          "items": {
+            "type": "string",
+            "enum": ["repository", "printer", "payment_gateway", "external_api"]
+          },
+          "minItems": 1
+        },
+        "regla_aislamiento": {
+          "type": "string",
+          "enum": ["domain_no_imports", "usecases_ports", "tenant_filter"],
+          "description": "Regla de aislamiento arquitectónico"
+        },
+        "acl_activo": {
+          "type": "boolean",
+          "description": "Anti-Corruption Layer activo"
+        },
+        "acl_sistemas": {
+          "type": "string",
+          "description": "Sistemas legacy/externos que requieren ACL"
+        },
+        "acl_estrategia": {
+          "type": "string",
+          "enum": ["adapter", "facade", "translator_queue", "sidecar"],
+          "description": "Estrategia de ACL"
+        }
+      }
+    },
+    "ai_fallback": {
+      "type": "object",
+      "description": "Estrategia AI y fallback",
+      "required": ["llm_activo"],
+      "properties": {
+        "llm_activo": {
+          "type": "boolean",
+          "description": "Integración LLM activa"
+        },
+        "llm_casos": {
+          "type": "array",
+          "description": "Casos de uso de LLM",
+          "items": {
+            "type": "string",
+            "enum": ["generacion_contenido", "rag_busqueda", "clasificacion", "asistente", "otro"]
+          }
+        },
+        "llm_proveedor": {
+          "type": "string",
+          "enum": ["openai", "anthropic", "google", "local", "multi_router"],
+          "description": "Proveedor de LLM"
+        },
+        "fallback_reintentos_max": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Máximo de reintentos con backoff"
+        },
+        "fallback_proveedor_secundario": {
+          "type": "boolean",
+          "description": "Usar proveedor secundario como fallback"
+        },
+        "fallback_cache_ttl": {
+          "type": "number",
+          "minimum": 0,
+          "description": "TTL de cache en segundos para fallback"
+        },
+        "fallback_regla_estatica": {
+          "type": "boolean",
+          "description": "Usar regla estática como fallback"
+        },
+        "fallback_degradacion": {
+          "type": "boolean",
+          "description": "Degradación elegante activa"
+        },
+        "guardrails_schema": {
+          "type": "boolean",
+          "description": "Validación de schema en respuestas LLM"
+        },
+        "guardrails_judge": {
+          "type": "boolean",
+          "description": "LLM-as-Judge activo"
+        },
+        "guardrails_filtro": {
+          "type": "boolean",
+          "description": "Filtro de contenido activo"
+        },
+        "guardrails_rate_limit": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Rate limit en req/min para LLM"
+        }
+      }
+    },
+    "seguridad": {
+      "type": "object",
+      "description": "Seguridad, autenticación y compliance",
+      "required": ["auth", "hashing", "authz", "tenant", "encriptacion", "compliance", "auditoria"],
+      "properties": {
+        "auth": {
+          "type": "string",
+          "enum": ["nextauth", "jwt_cookies", "jwt_headers", "oauth2", "mtls"],
+          "description": "Sistema de autenticación"
+        },
+        "hashing": {
+          "type": "string",
+          "enum": ["bcrypt", "argon2id", "go_bcrypt"],
+          "description": "Algoritmo de hashing de contraseñas"
+        },
+        "authz": {
+          "type": "string",
+          "enum": ["rbac", "abac", "permissions", "ownership"],
+          "description": "Modelo de autorización"
+        },
+        "tenant": {
+          "type": "string",
+          "enum": ["session_tenant", "entity_tenant", "sucursal_filter", "single"],
+          "description": "Estrategia multi-tenant"
+        },
+        "encriptacion_at_rest": {
+          "type": "boolean",
+          "description": "Encriptación AES-256 at rest"
+        },
+        "encriptacion_in_transit": {
+          "type": "boolean",
+          "description": "TLS 1.3 en tránsito"
+        },
+        "pii_field_level": {
+          "type": "boolean",
+          "description": "Encriptación field-level para PII"
+        },
+        "masking_logs": {
+          "type": "boolean",
+          "description": "Masking de datos sensibles en logs"
+        },
+        "compliance": {
+          "type": "array",
+          "description": "Standards de compliance",
+          "items": {
+            "type": "string",
+            "enum": ["gdpr", "hipaa", "soc2", "pci_dss", "none"]
+          },
+          "minItems": 1
+        },
+        "auditoria_framework": {
+          "type": "string",
+          "enum": ["zerolog", "fastapi_audit", "nextjs_logs"],
+          "description": "Framework de auditoría"
+        },
+        "auditoria_retencion": {
+          "type": "number",
+          "enum": [30, 90, 365],
+          "description": "Días de retención de logs de auditoría"
+        }
+      }
+    },
+    "testing": {
+      "type": "object",
+      "description": "Testing, calidad y herramientas",
+      "required": ["modo", "cobertura", "frameworks"],
+      "properties": {
+        "modo": {
+          "type": "string",
+          "enum": ["strict", "flexible", "test-after", "minimal"],
+          "description": "Modo de TDD"
+        },
+        "cobertura_unit": {
+          "type": "number",
+          "enum": [70, 80, 90],
+          "description": "Cobertura mínima de tests unitarios (%)"
+        },
+        "cobertura_integration": {
+          "type": "string",
+          "enum": ["required", "optional", "none"],
+          "description": "Tests de integración"
+        },
+        "cobertura_e2e": {
+          "type": "string",
+          "enum": ["critical-paths", "full", "none"],
+          "description": "Tests end-to-end"
+        },
+        "testing_framework": {
+          "type": "string",
+          "enum": ["vitest", "go_test", "pytest"],
+          "description": "Framework de testing"
+        },
+        "package_manager": {
+          "type": "string",
+          "enum": ["pnpm", "npm", "go_mod", "uv"],
+          "description": "Gestor de paquetes"
+        },
+        "linter": {
+          "type": "string",
+          "enum": ["eslint", "golangci_lint", "ruff"],
+          "description": "Linter de código"
+        },
+        "formatter": {
+          "type": "string",
+          "enum": ["prettier", "gofmt", "isort"],
+          "description": "Formatter de código"
+        },
+        "type_check": {
+          "type": "string",
+          "enum": ["tsc", "mypy", "pyright", "go_vet"],
+          "description": "Type checker"
+        },
+        "validacion_contratos": {
+          "type": "string",
+          "enum": ["openapi_validator", "swag_init", "fastapi_auto", "htmx_tests", "none"],
+          "description": "Validación de contratos en CI"
+        }
+      }
+    },
+    "observabilidad": {
+      "type": "object",
+      "description": "Observabilidad y alertas",
+      "required": ["logging", "metricas", "alerting"],
+      "properties": {
+        "log_formato": {
+          "type": "string",
+          "enum": ["json", "texto", "zerolog"],
+          "description": "Formato de logs"
+        },
+        "log_nivel_prod": {
+          "type": "string",
+          "enum": ["warn", "error"],
+          "description": "Nivel de log en producción"
+        },
+        "log_destino": {
+          "type": "string",
+          "enum": ["stdout_loki", "cloud_native", "datadog"],
+          "description": "Destino de logs"
+        },
+        "metricas_framework": {
+          "type": "string",
+          "enum": ["prometheus", "opentelemetry", "cloud_native", "none"],
+          "description": "Framework de métricas"
+        },
+        "metricas_clave": {
+          "type": "array",
+          "description": "Métricas clave a monitorear",
+          "items": {
+            "type": "string",
+            "enum": ["request_duration", "error_rate", "business_metric", "queue_depth"]
+          },
+          "minItems": 1
+        },
+        "tracing_habilitado": {
+          "type": "boolean",
+          "description": "Tracing distribuido habilitado"
+        },
+        "tracing_provider": {
+          "type": "string",
+          "enum": ["jaeger", "zipkin", "datadog"],
+          "description": "Provider de tracing"
+        },
+        "tracing_sample": {
+          "type": "number",
+          "enum": [0.01, 0.1, 1.0],
+          "description": "Sample rate de tracing"
+        },
+        "alerting_canales": {
+          "type": "array",
+          "description": "Canales de alerta",
+          "items": {
+            "type": "string",
+            "enum": ["slack", "pagerduty", "email", "webhook"]
+          },
+          "minItems": 1
+        },
+        "alerting_error_porcentaje": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Umbral de error %"
+        },
+        "alerting_error_minutos": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Minutos para alerta de error"
+        },
+        "alerting_latencia_p99": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Umbral de latencia p99 (ms)"
+        },
+        "alerting_cpu_mem": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Umbral de CPU/Mem %"
+        }
+      }
+    },
+    "deploy": {
+      "type": "object",
+      "description": "Deploy, runtime y CI/CD",
+      "required": ["plataforma", "escalado", "pipeline"],
+      "properties": {
+        "plataforma": {
+          "type": "string",
+          "enum": ["vercel", "cloud_run", "railway", "kubernetes", "docker_compose", "binario"],
+          "description": "Plataforma de despliegue"
+        },
+        "escalado_estrategia": {
+          "type": "string",
+          "enum": ["horizontal", "vertical", "serverless", "manual"],
+          "description": "Estrategia de escalado"
+        },
+        "escalado_instancias_min": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Número mínimo de instancias"
+        },
+        "escalado_instancias_max": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Número máximo de instancias"
+        },
+        "timeout": {
+          "type": "number",
+          "enum": [30, 60, 300],
+          "description": "Timeout en segundos"
+        },
+        "health_endpoint": {
+          "type": "string",
+          "enum": ["/health", "/ready", "/ping"],
+          "description": "Endpoint de health check"
+        },
+        "pipeline_proveedor": {
+          "type": "string",
+          "enum": ["github_actions", "gitlab_ci", "circleci", "jenkins", "argocd"],
+          "description": "Proveedor de CI/CD"
+        },
+        "pipeline_etapas": {
+          "type": "array",
+          "description": "Etapas del pipeline",
+          "items": {
+            "type": "string",
+            "enum": [
+              "lint",
+              "test",
+              "type-check",
+              "security-scan",
+              "build",
+              "deploy-staging",
+              "manual-approval",
+              "deploy-prod"
+            ]
+          },
+          "minItems": 1
+        },
+        "rollback_estrategia": {
+          "type": "string",
+          "enum": ["immediate", "blue_green", "canary", "feature_flag"],
+          "description": "Estrategia de rollback"
+        }
+      }
+    },
+    "evolucion": {
+      "type": "object",
+      "description": "Evolución, versionado y complejidad",
+      "required": ["versioning", "feature_flags", "complejidad", "hardware"],
+      "properties": {
+        "api_versioning": {
+          "type": "string",
+          "enum": ["semver_url", "header", "date_based", "none"],
+          "description": "Estrategia de versionado de API"
+        },
+        "deprecation_aviso_dias": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Días de aviso antes de deprecation"
+        },
+        "deprecation_sunset_dias": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Días adicionales hasta sunset"
+        },
+        "deprecation_comunicacion": {
+          "type": "string",
+          "enum": ["changelog", "email", "in_app", "docs"],
+          "description": "Método de comunicación de deprecation"
+        },
+        "schema_migration": {
+          "type": "string",
+          "enum": ["expand_contract", "dual_write", "big_bang", "blue_green"],
+          "description": "Estrategia de migración de schema"
+        },
+        "feature_flags_tool": {
+          "type": "string",
+          "enum": ["unleash", "launchdarkly", "flagsmith", "env_var"],
+          "description": "Herramienta de feature flags"
+        },
+        "feature_flags_rollout": {
+          "type": "string",
+          "enum": ["porcentaje", "segmento", "canary", "kill_switch"],
+          "description": "Estrategia de rollout"
+        },
+        "complejidad_score": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Score de complejidad (1-10)"
+        },
+        "complejidad_riesgos": {
+          "type": "array",
+          "description": "Top 3 riesgos con mitigación",
+          "items": {
+            "type": "object",
+            "properties": {
+              "riesgo": {
+                "type": "string",
+                "description": "Descripción del riesgo"
+              },
+              "mitigacion": {
+                "type": "string",
+                "description": "Estrategia de mitigación"
+              }
+            },
+            "required": ["riesgo", "mitigacion"]
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "entrega_enfoque": {
+          "type": "string",
+          "enum": ["mvp_iterativo", "vertical_slice", "horizontal_layer", "big_bang"],
+          "description": "Enfoque de entrega"
+        },
+        "hardware_impresora": {
+          "type": "string",
+          "enum": ["node_escpos", "go_escpos", "python_escpos", "none"],
+          "description": "Biblioteca para impresora"
+        },
+        "hardware_bascula": {
+          "type": "string",
+          "enum": ["pyserial", "go_serial", "webusb", "none"],
+          "description": "Biblioteca para báscula/serial"
+        },
+        "hardware_biometrico": {
+          "type": "string",
+          "enum": ["ctypes_dll", "hid_api", "serial_rs232", "none"],
+          "description": "Biblioteca para lector biométrico"
+        },
+        "hardware_modelo_precio": {
+          "type": "string",
+          "description": "Modelo y precio en MXN del hardware"
+        }
+      }
+    },
+    "domain_modeling": {
+      "type": "object",
+      "description": "Domain Modeling (DDD Lite → Pro) - Opcional",
+      "properties": {
+        "entidades": {
+          "type": "string",
+          "description": "Lista de entidades del dominio"
+        },
+        "value_objects": {
+          "type": "string",
+          "description": "Lista de value objects"
+        },
+        "aggregates": {
+          "type": "string",
+          "description": "Aggregates y límites de consistencia"
+        },
+        "invariantes": {
+          "type": "string",
+          "description": "Invariantes críticos del dominio"
+        },
+        "lenguaje_ubicuo": {
+          "type": "string",
+          "description": "Términos clave del lenguaje ubicuo"
+        },
+        "eventos_dominio": {
+          "type": "boolean",
+          "description": "Eventos de dominio activos"
+        },
+        "eventos_dominio_descripcion": {
+          "type": "string",
+          "description": "Descripción de eventos de dominio"
+        }
+      }
+    },
+    "consistencia": {
+      "type": "object",
+      "description": "Consistencia y Transacciones - Opcional",
+      "properties": {
+        "consistencia": {
+          "type": "string",
+          "enum": ["fuerte", "eventual", "mixta"],
+          "description": "Modelo de consistencia"
+        },
+        "estrategia": {
+          "type": "string",
+          "enum": ["transacciones_db", "saga_coreografia", "saga_orquestacion"],
+          "description": "Estrategia de transacciones distribuidas"
+        },
+        "concurrencia": {
+          "type": "string",
+          "enum": ["optimistic", "pessimistic", "ninguna"],
+          "description": "Estrategia de control de concurrencia"
+        },
+        "idempotencia": {
+          "type": "string",
+          "enum": ["required", "optional", "none"],
+          "description": "Requisito de idempotencia"
+        }
+      }
+    },
+    "resiliencia": {
+      "type": "object",
+      "description": "Resiliencia y Manejo de Fallos - Opcional",
+      "properties": {
+        "retry_backoff": {
+          "type": "boolean",
+          "description": "Retry con backoff activo"
+        },
+        "circuit_breaker": {
+          "type": "boolean",
+          "description": "Circuit breaker activo"
+        },
+        "timeout_servicio": {
+          "type": "boolean",
+          "description": "Timeout por servicio activo"
+        },
+        "bulkhead": {
+          "type": "boolean",
+          "description": "Bulkhead pattern activo"
+        },
+        "graceful_degradation": {
+          "type": "boolean",
+          "description": "Degradación elegante activa"
+        },
+        "fallback_general": {
+          "type": "string",
+          "description": "Fallback general configurado"
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance y Escalabilidad - Opcional",
+      "properties": {
+        "caching": {
+          "type": "string",
+          "enum": ["read_through", "write_through", "cache_aside", "none"],
+          "description": "Estrategia de caching"
+        },
+        "db_indexacion": {
+          "type": "boolean",
+          "description": "Indexación crítica definida"
+        },
+        "db_optimization": {
+          "type": "boolean",
+          "description": "Query optimization aplicada"
+        },
+        "pagination": {
+          "type": "string",
+          "enum": ["offset", "cursor", "none"],
+          "description": "Estrategia de paginación"
+        },
+        "rate_limiting": {
+          "type": "string",
+          "enum": ["global", "por_usuario", "por_endpoint", "none"],
+          "description": "Estrategia de rate limiting"
+        },
+        "edge_cdn": {
+          "type": "boolean",
+          "description": "Edge/CDN activo"
+        }
+      }
+    },
+    "modelo_errores": {
+      "type": "object",
+      "description": "Modelo de Errores - Opcional",
+      "properties": {
+        "formato": {
+          "type": "string",
+          "enum": ["rfc7807", "custom"],
+          "description": "Formato de errores"
+        },
+        "tipos": {
+          "type": "array",
+          "description": "Tipos de errores",
+          "items": {
+            "type": "string",
+            "enum": ["domain", "validation", "infra"]
+          },
+          "minItems": 1
+        },
+        "logging": {
+          "type": "string",
+          "enum": ["estructurado", "basico"],
+          "description": "Logging de errores"
+        }
+      }
+    },
+    "seguridad_avanzada": {
+      "type": "object",
+      "description": "Seguridad Avanzada - Opcional",
+      "properties": {
+        "threat_modeling": {
+          "type": "string",
+          "enum": ["stride", "basico", "none"],
+          "description": "Método de threat modeling"
+        },
+        "proteccion_csrf": {
+          "type": "boolean",
+          "description": "Protección CSRF activa"
+        },
+        "proteccion_rate_abuse": {
+          "type": "boolean",
+          "description": "Protección contra rate abuse"
+        },
+        "proteccion_replay": {
+          "type": "boolean",
+          "description": "Protección contra replay attacks"
+        },
+        "proteccion_sanitization": {
+          "type": "boolean",
+          "description": "Input sanitization activa"
+        },
+        "owasp": {
+          "type": "string",
+          "enum": ["completo", "parcial", "none"],
+          "description": "Checklist OWASP aplicado"
+        }
+      }
+    },
+    "config_secrets": {
+      "type": "object",
+      "description": "Configuración y Secretos - Opcional",
+      "properties": {
+        "config": {
+          "type": "string",
+          "enum": ["env_simple", "config_entorno", "config_service"],
+          "description": "Estrategia de configuración"
+        },
+        "secretos": {
+          "type": "string",
+          "enum": ["env_vars", "secret_manager", "vault"],
+          "description": "Gestión de secretos"
+        }
+      }
+    },
+    "evolucion_sistema": {
+      "type": "object",
+      "description": "Evolución del Sistema - Opcional",
+      "properties": {
+        "compatibilidad": {
+          "type": "string",
+          "enum": ["backward", "breaking"],
+          "description": "Compatibilidad de cambios"
+        },
+        "estrategia": {
+          "type": "string",
+          "enum": ["strangler", "refactor_incremental", "big_rewrite"],
+          "description": "Estrategia de evolución"
+        }
+      }
+    },
+    "data_lifecycle": {
+      "type": "object",
+      "description": "Data Lifecycle - Opcional",
+      "properties": {
+        "datos": {
+          "type": "string",
+          "enum": ["archivado", "anonimizacion", "eliminacion_legal"],
+          "description": "Estrategia de datos"
+        },
+        "data_lineage": {
+          "type": "boolean",
+          "description": "Data lineage activo"
+        }
+      }
+    },
+    "ux_flujos": {
+      "type": "object",
+      "description": "UX y Flujos - Opcional",
+      "properties": {
+        "user_journeys": {
+          "type": "string",
+          "description": "User journeys del sistema"
+        },
+        "estados_ui": {
+          "type": "array",
+          "description": "Estados UI implementados",
+          "items": {
+            "type": "string",
+            "enum": ["loading", "empty", "error", "success"]
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "developer_experience": {
+      "type": "object",
+      "description": "Developer Experience - Opcional",
+      "properties": {
+        "repo": {
+          "type": "string",
+          "enum": ["monorepo", "multirepo"],
+          "description": "Estrategia de repositorios"
+        },
+        "git": {
+          "type": "string",
+          "enum": ["trunk_based", "gitflow"],
+          "description": "Estrategia de Git"
+        },
+        "convenciones": {
+          "type": "string",
+          "description": "Convenciones del equipo"
+        }
+      }
+    },
+    "costos_finops": {
+      "type": "object",
+      "description": "Costos y FinOps - Opcional",
+      "properties": {
+        "estimacion": {
+          "type": "string",
+          "description": "Estimación de costos"
+        },
+        "control_limites": {
+          "type": "boolean",
+          "description": "Límites de consumo activos"
+        },
+        "control_alertas": {
+          "type": "boolean",
+          "description": "Alertas de costo activas"
+        },
+        "control_optimizacion": {
+          "type": "boolean",
+          "description": "Optimización continua activa"
+        }
+      }
+    }
+  }
+}

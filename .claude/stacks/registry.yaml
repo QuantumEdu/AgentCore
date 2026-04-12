@@ -1,0 +1,111 @@
+---
+registry:
+  version: "1.0"
+  last_updated: "2026-04-12"
+
+available_stacks:
+  - id: "nextjs15"
+    name: "Next.js 15 Full-Stack"
+    path: "stacks/nextjs15"
+    description: "React 19 + Prisma + NextAuth, ideal para SaaS web modernos"
+    tags: ["react", "typescript", "prisma", "saas"]
+    complexity: "medium"
+    substacks: []
+    status: "active"
+  
+  - id: "go-wails"
+    name: "Go + Fiber + Wails"
+    path: "stacks/go-wails"
+    description: "Backend Go + Desktop nativo, ideal para POS y apps instalables"
+    tags: ["go", "desktop", "wails", "hardware"]
+    complexity: "medium-high"
+    substacks: []
+    status: "active"
+  
+  - id: "fastapi"
+    name: "FastAPI + Python"
+    path: "stacks/fastapi"
+    description: "Python async con opciones SSR/SPA/Desktop, ideal para sistemas médicos y de datos"
+    tags: ["python", "fastapi", "sqlalchemy", "htmx"]
+    complexity: "low-medium"
+    substacks:
+      - id: "fastapi_ssr"
+        name: "Stack A: SSR (Jinja2 + HTMX + PicoCSS)"
+        triggers: ["Jinja2", "HTMX", "app interna"]
+        description: "Server-side rendering ideal para apps internas"
+      
+      - id: "fastapi_spa"
+        name: "Stack B: SPA (React 18 + MUI)"
+        triggers: ["React", "MUI", "SPA", "producto vendible"]
+        description: "Single Page Application ideal para productos SaaS"
+      
+      - id: "fastapi_desktop"
+        name: "Stack C: Desktop (PyWebview)"
+        triggers: ["PyWebview", "app instalada"]
+        description: "Desktop app con Python backend"
+    status: "active"
+  
+  - id: "laravel"
+    name: "Laravel 11"
+    path: "stacks/laravel"
+    description: "PHP moderno, ejemplo de extensibilidad"
+    tags: ["php", "laravel", "livewire"]
+    complexity: "medium"
+    substacks: []
+    status: "planned"
+    note: "Ejemplo de extensibilidad. No implementado aún."
+
+detection_priority:
+  - "nextjs15"
+  - "fastapi"
+  - "go-wails"
+  - "laravel"
+
+detection_rules:
+  - trigger: "[x] Next.js 15"
+    stack: "nextjs15"
+    confidence: 1.0
+  
+  - trigger: "[x] Go + Fiber + Wails"
+    stack: "go-wails"
+    confidence: 1.0
+  
+  - trigger: "[x] FastAPI Stack A"
+    stack: "fastapi_ssr"
+    confidence: 1.0
+  
+  - trigger: "[x] FastAPI Stack B"
+    stack: "fastapi_spa"
+    confidence: 1.0
+  
+  - trigger: "[x] FastAPI Stack C"
+    stack: "fastapi_desktop"
+    confidence: 1.0
+  
+  - trigger: "[x] Laravel"
+    stack: "laravel"
+    confidence: 1.0
+  
+  - trigger: "Next.js"
+    stack: "nextjs15"
+    confidence: 0.9
+  
+  - trigger: "Fiber"
+    stack: "go-wails"
+    confidence: 0.9
+  
+  - trigger: "FastAPI"
+    stack: "fastapi"
+    confidence: 0.9
+  
+  - trigger: "React"
+    stack: "nextjs15"
+    confidence: 0.7
+  
+  - trigger: "Go"
+    stack: "go-wails"
+    confidence: 0.7
+  
+  - trigger: "Python"
+    stack: "fastapi"
+    confidence: 0.7
