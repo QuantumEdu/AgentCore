@@ -1,0 +1,1 @@
+# Manual de Pensamiento Crítico
