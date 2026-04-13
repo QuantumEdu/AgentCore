@@ -20,6 +20,14 @@ stack:
       "medium": {"scale": "small"}
       "high": {"scale": "medium"}
       "critical": {"scale": "large"}
+    
+    ai_tools:
+      "mcp": "Model Context Protocol - integración con LLMs"
+      "pycaret": "PyCareT - ML low-code"
+      "fastai": "FastAI - deep learning"
+      "huggingface": "Hugging Face - transformers y modelos"
+      "adk": "Google ADK - Agent Development Kit"
+      "ninguno": "Sin herramientas de IA"
   
   automatic_decisions:
     ids:
@@ -31,6 +39,28 @@ stack:
       method: "JWT"
       library: "library específica"
       hash: "bcrypt"
+    
+    ai:
+      default: "ninguno"
+      options:
+        - name: "mcp"
+          description: "Model Context Protocol para integración con LLMs"
+          library: "mcp-python"
+        - name: "pycaret"
+          description: "Machine learning low-code"
+          library: "pycaret"
+        - name: "fastai"
+          description: "Deep learning framework"
+          library: "fastai"
+        - name: "huggingface"
+          description: "Transformers y modelos pre-entrenados"
+          library: "transformers"
+        - name: "adk"
+          description: "Google Agent Development Kit"
+          library: "google-adk"
+        - name: "ninguno"
+          description: "Sin herramientas de IA"
+          library: null
     
     testing:
       framework: "pytest"

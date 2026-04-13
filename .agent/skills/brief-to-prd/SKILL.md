@@ -66,6 +66,7 @@ Si el stack ya está seleccionado, verificar que estos campos no sean nulos:
 | `bounded_contexts` | Lista de contextos delimitados |
 | `multi_tenant` | Si es sistema multi-tenant |
 | `ai_features` | Si tiene características de IA |
+| `ai_tools` | Herramientas de IA a usar (mcp, pycaret, fastai, huggingface, adk, ninguno) |
 
 Si alguno de estos es nulo, hacer pregunta en Paso 3.
 
@@ -182,6 +183,7 @@ campos_criticos:
   - frontend_framework
   - ui_library
   - realtime_required
+  - ai_tools  # "mcp" | "pycaret" | "fastai" | "huggingface" | "adk" | "ninguno"
 ```
 
 #### FastAPI
@@ -197,6 +199,7 @@ campos_criticos:
   - python_version
   - frontend_type  # "ssr" | "spa" | "desktop"
   - hardware
+  - ai_tools  # "mcp" | "pycaret" | "fastai" | "huggingface" | "adk" | "ninguno"
 ```
 
 #### Go Wails
@@ -213,6 +216,7 @@ campos_criticos:
   - frontend_type  # "spa" | "desktop"
   - hardware
   - websocket_required
+  - ai_tools  # "mcp" | "pycaret" | "fastai" | "huggingface" | "adk" | "ninguno"
 ```
 
 ### Formato de preguntas interactivas
@@ -235,6 +239,7 @@ campos_criticos:
 1. ¿Qué frameworks/tecnologías prefieres para el frontend?
 2. ¿Necesitas tiempo real? (WebSocket, polling, etc.)
 3. ¿Hay integraciones con servicios externos? (pagos, email, etc.)
+4. ¿Usaras herramientas de IA? (MCP, PyCareT, FastAI, Hugging Face, ADK, ninguno)
 
 #### 🏗️ Arquitectura
 1. ¿Cuántos bounded contexts necesitas?
@@ -671,6 +676,7 @@ Brief-to-PRD Skill:
 1. ¿Qué frameworks prefieres para el frontend?
 2. ¿Necesitas tiempo real?
 3. ¿Hay integraciones con servicios externos?
+4. ¿Usaras herramientas de IA? (MCP, PyCareT, FastAI, Hugging Face, ADK, ninguno)
 
 ---
 
