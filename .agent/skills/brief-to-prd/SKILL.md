@@ -589,7 +589,7 @@ FORMAT: YAML
 
 ```bash
 # 1. Generar PRD
-OUTPUT: improve01/outputs/PRD_{nombre_proyecto}_{stack}.md
+OUTPUT: .claude/outputs/PRD_{nombre_proyecto}_{stack}.md
 FORMAT: Markdown
 
 # 2. Generar stack_config.yml
@@ -611,12 +611,12 @@ FORMAT: YAML
 ### 📄 Artefactos generados:
 
 1. **PRD Profesional**
-   📁 `improve01/outputs/PRD_{nombre_proyecto}_{stack}.md`
-   - Requisitos funcionales y no funcionales
-   - Arquitectura hexagonal completa
-   - Patrones de diseño aplicados
-   - Roadmap de desarrollo
-   - Riesgos y mitigaciones
+    📁 `.claude/outputs/PRD_{nombre_proyecto}_{stack}.md`
+    - Requisitos funcionales y no funcionales
+    - Arquitectura hexagonal completa
+    - Patrones de diseño aplicados
+    - Roadmap de desarrollo
+    - Riesgos y mitigaciones
 
 2. **Configuración del Stack**
    📁 `.claude/stack_config.yml`
@@ -709,12 +709,12 @@ Brief-to-PRD Skill:
 ### 📄 Artefactos generados:
 
 1. **PRD Profesional**
-   📁 `improve01/outputs/PRD_RestaurantPOS_NextJS15.md`
-   - Requisitos funcionales y no funcionales
-   - Arquitectura hexagonal completa
-   - Patrones de diseño aplicados
-   - Roadmap de desarrollo
-   - Riesgos y mitigaciones
+    📁 `.claude/outputs/PRD_RestaurantPOS_NextJS15.md`
+    - Requisitos funcionales y no funcionales
+    - Arquitectura hexagonal completa
+    - Patrones de diseño aplicados
+    - Roadmap de desarrollo
+    - Riesgos y mitigaciones
 
 2. **Configuración del Stack**
    📁 `.claude/stack_config.yml`
@@ -756,8 +756,8 @@ Antes de finalizar, verificar:
 - [ ] **Skill delegado**: PRD generado con el skill específico del stack
 - [ ] **stack_config.yml generado**: Archivo YAML válido en .claude/
 - [ ] **Archivos creados**:
-  - [ ] PRD en improve01/outputs/PRD_{nombre}_{stack}.md
-  - [ ] Config en .claude/stack_config.yml
+   - [ ] PRD en .claude/outputs/PRD_{nombre}_{stack}.md
+   - [ ] Config en .claude/stack_config.yml
 - [ ] **Resumen presentado**: Formato correcto con próximos pasos
 
 ## Error Handling

@@ -1,7 +1,0 @@
-﻿Área,Propuesta,Por qué
-Perfiles de Stack Modulares,Reemplazar stack_config.json único por /stacks/ (ej: nextjs15.yml", "go-wails.yml", "fastapi-ssr.yml", etc.)","Los PRDs muestran que cada stack tiene reglas, ORMs, validación y patrones distintos. Un solo JSON se vuelve ilegible."
-Pipeline PRD → Contexto,Incluir un template PROJECT-BRIEF.md + script que lo convierte en phase-1-context.md y decision_log.md,AgentCore actualmente no ingesta requisitos estructurados. Los PRDs ya tienen la lógica; solo hay que conectarlos.
-Validadores Stack-Aware,Extender check_stack.py para verificar reglas por stack (ej: Mapped[]" en FastAPI, "cuid()" en Next.js, "swag init en Go),Los PRDs exigen decisiones técnicas automáticas. Validarlas en sdd-apply evita drift arquitectónico.
-Fases de Workflow Explícitas,Dividir .claude/ en 4 fases: context → design → tasks → implement/verify,GSD/BMAD usan flujos. AgentCore gana trazabilidad sin añadir complejidad.
-Patrones & Reglas Inyectables,Carpeta /rules/ con hexagonal.md", "solid.md", "design-patterns.md y /stacks/{stack}/decisions-automaticas.md,"Los PRDs ya documentan Factory, Strategy, Observer, Repository. AgentCore debe usarlos como referencia, no reinventarlos."
-Memoria en Formato ADR,Cambiar decision_log.json por decision_log.md con formato: ### [YYYY-MM-DD] Decisión → Contexto → Alternativas → Consecuencia,"JSON es hostil para humanos y LLMs. Markdown ADR es nativo, versionable y fácil de inyectar en contexto."

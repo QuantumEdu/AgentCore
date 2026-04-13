@@ -49,7 +49,7 @@ AgentCore v2.0 is a reusable `.claude/` infrastructure template for AI-assisted 
            │                      │
            ▼                      ▼
 ┌─────────────────────────────────────────────────────────┐
-│ improve01/outputs/PRD_{name}_{stack}.md              │
+│ .claude/outputs/PRD_{name}_{stack}.md               │
 │ .claude/stack_config.yml                               │
 └─────────────────────────────────────────────────────────┘
 ```

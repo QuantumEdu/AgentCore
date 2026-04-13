@@ -1,6 +1,7 @@
 # PROJECT-BRIEF-FULL.yaml
-# Conversión de la plantilla Markdown a YAML estructurado
-# Generado desde: D:\02-A\code\agentcore_publish\improve01\PROJECT-BRIEF-FULL
+# Plantilla estructurada para Brief de proyecto (23 secciones)
+# Ubicación: .claude/templates/PROJECT-BRIEF-FULL.yaml
+# Usado por: skill brief-to-prd, script project_brief_parser.py
 
 # 1️⃣ Contexto & Stack Base
 nombre: "Nombre del Sistema"

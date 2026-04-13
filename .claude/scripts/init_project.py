@@ -61,7 +61,7 @@ __pycache__/
 
 # AgentCore
 .claude/stack_config.yml
-improve01/outputs/
+.claude/outputs/
 """)
 
     # Preguntar stack preferido
@@ -106,13 +106,14 @@ timeframe: "medium-3mes"
 # ... resto del brief
 """
 
-    (project_path / "improve01").mkdir(exist_ok=True)
-    (project_path / "improve01" / "PROJECT-BRIEF-FULL.yaml").write_text(brief_content)
+    (project_path / ".claude" / "templates" / "PROJECT-BRIEF-FULL.yaml").write_text(
+        brief_content
+    )
 
     print("\n✅ Proyecto inicializado exitosamente!")
     print(f"\n📝 Siguientes pasos:")
     print(f"   1. cd {project_path}")
-    print(f"   2. Edita improve01/PROJECT-BRIEF-FULL.yaml")
+    print(f"   2. Edita .claude/templates/PROJECT-BRIEF-FULL.yaml")
     print(f"   3. Ejecuta: python .claude/scripts/stack_selector.py")
     print(f"   4. Usa el skill 'brief-to-prd' para generar PRD + config")
 
