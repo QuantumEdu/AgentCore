@@ -1,8 +1,8 @@
 # .claude/PORTABILITY.md
-# Portability Guide - AgentCore Template v1.3
+# Portability Guide - AgentCore Template v2.3
 
-**VERSION**: 2.0
-**DATE**: 2026-04-12
+**VERSION**: 2.3
+**DATE**: 2026-04-14
 **CURRENT PROJECT**: AgentCore v2.0 - Multi-Stack Agent System
 
 ---
@@ -32,7 +32,8 @@ This template provides a `.claude/` infrastructure that **PREVENTS common omissi
 | `.claude/memory/backlog/roadmap.md` | Rewrite for your milestones |
 | `AGENT_GUIDE.md` | Update for your project |
 | `MANDATORY_CHECKS.md` | Update for your project |
-| `PROJECT-BRIEF-FULL.yaml` | Fill with your project details |
+| `PROJECT-BRIEF-FULL-Quantum.yaml` | Llenar con los detalles del proyecto (formato YAML, parsing automático) |
+| `PROJECT-BRIEF-FULL.md` | Llenar con los detalles del proyecto (formato Markdown, llenado manual) |
 
 ### Generally Reusable (minimal changes)
 
@@ -55,7 +56,10 @@ This template provides a `.claude/` infrastructure that **PREVENTS common omissi
 | `.agent/skills/stack-generator/SKILL.md` | Generic config generator (multi-stack) |
 | `.claude/rules/patterns/*` | Reusable patterns (hexagonal, SOLID, design, testing) |
 | `.claude/scripts/*` | Utility scripts (stack-agnostic) |
-| `.claude/templates/*` | Reusable templates (Brief, ADR, roadmap) |
+| `.claude/templates/PROJECT-BRIEF-FULL-Quantum.yaml` | Template canónico YAML (35 secciones) — reusable sin cambios |
+| `.claude/templates/PROJECT-BRIEF-FULL.md` | Template canónico Markdown (35 secciones) — reusable sin cambios |
+| `.claude/templates/decision_adr_template.md` | Template ADR — reusable sin cambios |
+| `.claude/templates/roadmap_template.md` | Template roadmap — reusable sin cambios |
 
 ---
 
@@ -68,19 +72,19 @@ AgentCore v2.0 uses a dynamic stack configuration system:
 Instead of multiple stack-specific files, v2.0 uses a single `stack_config.yml` that:
 - References the selected stack from `.claude/stacks/{stack}/`
 - Contains project-specific overrides
-- Is auto-generated from `PROJECT-BRIEF-FULL.yaml`
+- Is auto-generated from `PROJECT-BRIEF-FULL-Quantum.yaml` or `PROJECT-BRIEF-FULL.md`
 
 ### Stack Selection
 
 To select a stack:
-1. Fill `PROJECT-BRIEF-FULL.yaml` with your `stack_principal`
+1. Fill `PROJECT-BRIEF-FULL-Quantum.yaml` (YAML) or `PROJECT-BRIEF-FULL.md` (Markdown) with your `stack_principal`
 2. Run: `python .claude/scripts/stack_selector.py`
-3. Or use the `brief-to-prd` skill (auto-detects from Brief)
+3. Or use the `brief-to-prd` skill (auto-detects format and stack from Brief)
 
 ### Multi-Stack Projects
 
 For projects that need multiple stacks (e.g., web + desktop):
-1. Create multiple `PROJECT-BRIEF-FULL-{stack}.yaml` files
+1. Create multiple `PROJECT-BRIEF-FULL-{stack}.yaml` files based on `PROJECT-BRIEF-FULL-Quantum.yaml`
 2. Generate separate PRDs and configs for each
 3. Use branch strategies or monorepo to manage both
 

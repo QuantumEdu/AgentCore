@@ -92,28 +92,22 @@ __pycache__/
         f"ℹ️  Ejecuta 'python .claude/scripts/stack_selector.py' para cambiar el stack más tarde"
     )
 
-    # Crear PROJECT-BRIEF-FULL.yaml inicial
-    brief_content = f"""# PROJECT-BRIEF-FULL
-# Generado automáticamente por AgentCore v2.0
-
-nombre: "Mi Proyecto"
-tipo_entrega: "web_saas"
-stack_principal: "{stack}"
-criticalidad: "medium"
-team_size: "2-5"
-timeframe: "medium-3mes"
-
-# ... resto del brief
-"""
-
-    (project_path / ".claude" / "templates" / "PROJECT-BRIEF-FULL.yaml").write_text(
-        brief_content
-    )
+    # Los templates de 35 secciones ya fueron copiados por shutil.copytree arriba:
+    #   .claude/templates/PROJECT-BRIEF-FULL-Quantum.yaml  (YAML, parsing automático)
+    #   .claude/templates/PROJECT-BRIEF-FULL.md            (Markdown, llenado manual)
+    # Solo actualizamos el stack_principal en el YAML canónico
+    quantum_path = project_path / ".claude" / "templates" / "PROJECT-BRIEF-FULL-Quantum.yaml"
+    if quantum_path.exists():
+        content = quantum_path.read_text(encoding="utf-8")
+        content = content.replace('stack_principal: ""', f'stack_principal: "{stack}"')
+        quantum_path.write_text(content, encoding="utf-8")
 
     print("\n✅ Proyecto inicializado exitosamente!")
     print(f"\n📝 Siguientes pasos:")
     print(f"   1. cd {project_path}")
-    print(f"   2. Edita .claude/templates/PROJECT-BRIEF-FULL.yaml")
+    print(f"   2. Llená el brief (elegí el formato que preferís):")
+    print(f"      - YAML (parsing automático): .claude/templates/PROJECT-BRIEF-FULL-Quantum.yaml")
+    print(f"      - Markdown (llenado manual): .claude/templates/PROJECT-BRIEF-FULL.md")
     print(f"   3. Ejecuta: python .claude/scripts/stack_selector.py")
     print(f"   4. Usa el skill 'brief-to-prd' para generar PRD + config")
 

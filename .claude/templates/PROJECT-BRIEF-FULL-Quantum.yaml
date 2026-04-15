@@ -1,0 +1,1242 @@
+# =============================================================================
+# PROJECT-BRIEF-FULL.yaml  ·  v2.0
+# =============================================================================
+# Template estructurado de 35 secciones para capturar todos los requisitos
+# de un proyecto antes de generar un PRD, Stack JSON o inicializar un agente.
+#
+# CONVENCIONES:
+#   required: true/false  → si omitir el campo rompe el pipeline
+#   omit_if: [condición]  → cuándo esta sección puede saltarse completamente
+#   applies_to: [tipos]   → qué tipo_entrega activa esta sección
+#   "" (string vacío)     → valor por llenar
+#   []                    → lista por llenar
+#   false                 → explícitamente desactivado (distinto de "no sé")
+#
+# FLUJO RECOMENDADO:
+#   1. Llenar secciones 1–3 (contexto, negocio, personas) — SIEMPRE
+#   2. Llenar secciones 4–10 (arquitectura técnica core) — SIEMPRE
+#   3. Activar secciones adicionales según tipo_entrega y flags
+#   4. Ejecutar: brief-to-prd → stack-json → sdd-spec
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 1 ❙ CONTEXTO & STACK BASE
+# required: true  ·  omit_if: []
+# Primera decisión del arquitecto: qué construimos y con qué.
+# ─────────────────────────────────────────────────────────────────────────────
+metadata:
+  nombre: ""                    # Nombre del sistema/producto
+  codigo_proyecto: ""           # Clave corta ej: CSAUTO, VITACARE, PESCAPT
+  version_brief: "1.0"         # Versión de este documento
+  fecha: ""                     # YYYY-MM-DD
+  autor: ""                     # Arquitecto responsable
+  repositorio: ""               # URL del repo (o "pendiente")
+
+tipo_entrega: ""
+# OPCIONES:
+#   web_saas       → Dashboard/web accesible por browser
+#   app_desktop    → App instalable (Wails, PyInstaller, Electron)
+#   hibrido        → Desktop + admin web separados
+#   api_backend    → Solo API, sin UI propia
+#   cli_tool       → Herramienta de línea de comandos
+#   agente_ai      → Sistema de agentes autónomos (activar sección 11)
+
+stack_principal: ""
+# OPCIONES:
+#   nextjs15        → React 19 + Prisma + NextAuth + Tailwind (monolito full-stack)
+#   go_wails        → Go + Fiber + Wails v2 (desktop/web, binario nativo)
+#   fastapi_ssr     → FastAPI + Jinja2 + HTMX + PicoCSS (SSR clásico)
+#   fastapi_spa     → FastAPI + React 18 SPA + TypeScript + MUI
+#   fastapi_desktop → FastAPI + PyWebview + PyInstaller (desktop Python)
+#   electron_react  → Electron + React + Vite (desktop cross-platform)
+#   otro: ""        # Especificar si ninguno aplica
+
+criticalidad: ""
+# low      → falla tolerable, usuarios lo reportan, fix en días
+# medium   → falla impacta operación, fix en horas
+# high     → falla bloquea negocio, fix inmediato requerido
+# critical → falla = pérdida económica o legal, SLA contractual
+
+team_size: ""
+# 1 | 2-5 | 6-15 | 15+
+
+timeframe: ""
+# mvp-2sem   → MVP funcional en 2 semanas
+# short-1mes → Release en 1 mes
+# medium-3mes → Release en 3 meses
+# long-6mes+  → Proyecto largo con fases
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 2 ❙ CONTEXTO DE NEGOCIO & PROBLEM STATEMENT
+# required: true  ·  omit_if: []
+# ⚠️  ESTA ES LA PRIMERA PREGUNTA QUE UN SENIOR HACE.
+# Sin "por qué", cualquier decisión técnica es arbitraria.
+# ─────────────────────────────────────────────────────────────────────────────
+negocio:
+  problema: ""
+  # Completar: "El sistema existe porque [problema concreto]
+  # que afecta a [quién] y cuesta [impacto medible]."
+  # Ej: "Las clínicas pierden 2h/día coordinando citas por WhatsApp
+  # sin confirmación ni historial, generando 30% de no-shows."
+
+  solucion_propuesta: ""
+  # Qué hace el sistema para resolver ese problema.
+  # 1-3 oraciones. Sin jerga técnica.
+
+  estado_actual: ""
+  # greenfield   → proyecto nuevo desde cero
+  # brownfield   → reemplaza o extiende sistema existente
+  # migracion    → mueve datos/funciones de otro sistema
+  # prototipo    → MVP rápido para validar hipótesis
+
+  sistema_legacy: ""
+  # Si brownfield/migración: nombre del sistema actual, stack, volumen de datos.
+  # Si greenfield: "N/A"
+
+  modelo_negocio: ""
+  # b2b_saas | b2c | interno | open_source | gobierno | educativo | mixto
+
+  success_kpis:
+  # KPIs que definen si el proyecto TUVO ÉXITO desde el negocio.
+  # No son métricas técnicas (esas van en sección 14).
+  # Ej: "Reducir no-shows 50% en 90 días", "Procesar 200 pedidos/día"
+    - kpi: ""
+      meta: ""
+      plazo: ""
+    - kpi: ""
+      meta: ""
+      plazo: ""
+
+  restricciones_negocio: []
+  # Limitaciones no técnicas que condicionan el diseño.
+  # Ej: ["presupuesto máx $15K USD", "debe correr offline en zonas sin internet",
+  #       "IMSS requiere firma electrónica", "launch antes de temporada alta"]
+
+  supuestos: []
+  # Lo que asumes verdadero pero no has validado aún.
+  # Ej: ["usuarios tienen smartphone con Android 10+",
+  #       "conexión mínima 5 Mbps disponible en sucursales"]
+
+  fuera_de_alcance: []
+  # Qué explícitamente NO va en este proyecto.
+  # Crítico para evitar scope creep.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 3 ❙ STAKEHOLDERS & PERSONAS
+# required: true  ·  omit_if: [tipo_entrega == "cli_tool"]
+# Quiénes toman decisiones y quiénes usan el sistema.
+# ─────────────────────────────────────────────────────────────────────────────
+stakeholders:
+  decision_makers:
+  # Personas con poder de aprobar o vetar el proyecto.
+    - nombre: ""
+      rol: ""           # ej: "Director de TI", "Dueño del negocio"
+      expectativa: ""   # Qué espera obtener
+      riesgo: ""        # Qué teme / podría bloquear el proyecto
+
+  usuarios_primarios:
+  # El usuario que más usa el sistema día a día.
+    - persona: ""       # Nombre ficticio de la persona: "Ana la cajera"
+      perfil: ""        # Edad, habilidad técnica, contexto
+      job_to_be_done: ""  # "Cuando [situación], quiero [acción] para [resultado]"
+      pain_points: []
+      frecuencia_uso: ""  # diaria | semanal | ocasional
+
+  usuarios_secundarios: []
+  # Personas que usan el sistema pero no son el core.
+
+  equipo_desarrollo:
+    - nombre: ""
+      rol: ""           # Arquitecto | Backend | Frontend | DevOps | QA
+      disponibilidad: ""  # % de tiempo en el proyecto
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 4 ❙ ARQUITECTURA & LÍMITES DE DOMINIO
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+arquitectura:
+  patron: ""
+  # hexagonal_ligera    → Ports & Adapters dentro de monolito
+  # clean_architecture  → domain → application → infrastructure → adapters
+  # capas_fastapi       → domain/ → usecases/ ← ports/ ← adapters/
+  # mvc_simple          → Para proyectos pequeños o prototipos
+  # otro: ""
+
+  bounded_contexts:
+  # Marcar true solo los módulos que este sistema POSEE (no consume de otro).
+    auth_users: false
+    catalog_products: false
+    orders_sales: false
+    inventory: false
+    reporting: false
+    notifications: false
+    billing_payments: false
+    appointments: false
+    users_management: false
+    custom:
+    # Agregar módulos específicos del dominio
+      - nombre: ""
+        descripcion: ""
+
+  tipo_ejecucion: ""
+  # sync         → request/response tradicional
+  # async        → colas/background jobs (Celery, BullMQ, goroutines)
+  # event_driven → pub/sub (Redis Streams, Kafka, RabbitMQ)
+  # hybrid       → mix según bounded context
+  # streaming    → datos en tiempo real continuos
+  justificacion_ejecucion: ""
+  # ¿Por qué este tipo? Ej: "Los reportes de pentesting toman 5+ min,
+  # no pueden bloquear el request del usuario."
+
+  integraciones_externas: []
+  # Lista de sistemas externos con los que este sistema se comunica.
+  # Ej: [{nombre: "Conekta", tipo: "payment_gateway", protocolo: "REST"},
+  #       {nombre: "CFDI SAT", tipo: "facturacion", protocolo: "SOAP"}]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 5 ❙ ESTRATEGIA DE DATOS
+# required: true  ·  omit_if: [tipo_entrega == "cli_tool" y sin persistencia]
+# ─────────────────────────────────────────────────────────────────────────────
+estrategia_datos:
+  db_dev: ""
+  # sqlite | postgresql_docker | mongodb_local | mysql_docker | none
+
+  db_prod: ""
+  # postgresql | mysql | mongodb | dynamodb | cockroachdb | none
+
+  orm: ""
+  # prisma (nextjs15) | gorm (go) | sqlalchemy (fastapi) | mongoose (mongo)
+
+  ids: ""
+  # cuid   → Prisma, colisión-safe, URL-safe
+  # uuid   → Go/Python, estándar industria
+  # autoincrement → Más simple, predecible pero expone volumen
+  # ulid   → Sortable + UUID-safe, buena opción para event sourcing
+
+  cache_server: ""
+  # redis | memcached | in_memory | none
+  cache_ttl_default: ""     # Ej: "300s" (5 min), "3600s" (1h), "86400s" (1 día)
+  cache_invalidation: ""    # manual | ttl_only | event_based | none
+
+  estado_cliente: ""
+  # zustand | react_context | redux_toolkit | jotai | none | n_a
+
+  data_fetching: ""
+  # tanstack_query | swr | htmx | server_components | axios_manual | none
+
+  retencion_dias: 0
+  # Cuántos días se guardan datos operacionales antes de archivar/eliminar.
+  # 0 = indefinido. Considera GDPR/LFPDPPP si hay datos personales.
+
+  soft_delete: false
+  # true → registros marcados como deleted_at, nunca eliminados físicamente
+  # false → DELETE físico (irreversible, más simple)
+
+  backup:
+    estrategia: ""    # automated_daily | point_in_time | weekly_manual | none
+    retencion: ""     # Ej: "30 días rolling" | "90 días" | "1 año"
+    rpo: ""           # Recovery Point Objective: máx pérdida de datos aceptable
+    # Ej: "4h" (se puede perder hasta 4h de datos en peor caso)
+    rto: ""           # Recovery Time Objective: tiempo máx para restaurar
+    # Ej: "2h" (en 2h debe estar operativo de nuevo)
+    testing: ""       # monthly | quarterly | anual | never
+    # ⚠️  Un backup no probado no es un backup.
+
+  migraciones:
+    herramienta: ""   # alembic | prisma_migrate | golang_migrate | flyway | manual
+    estrategia: ""    # expand_contract | blue_green_db | big_bang | dual_write
+    rollback: false   # ¿Cada migración tiene down-migration documentada?
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 6 ❙ FILE STORAGE & MEDIA
+# required: false  ·  omit_if: [sistema sin archivos adjuntos o generados]
+# applies_to: [web_saas, hibrido, agente_ai]
+# ⚠️  Ausente en v1 del template. Causa problemas al crecer.
+# ─────────────────────────────────────────────────────────────────────────────
+file_storage:
+  activar: false
+
+  proveedor: ""
+  # s3 | gcs | azure_blob | minio (self-hosted) | local_filesystem | none
+  bucket_strategy: ""
+  # single_bucket   → todo en un bucket, prefijos por tipo
+  # multi_bucket    → bucket por entorno o tipo (public/private)
+  # tenant_isolated → bucket separado por cliente
+
+  tipos_archivo: []
+  # Qué tipos de archivos maneja el sistema.
+  # Ej: [reportes_pdf, imagenes_perfil, documentos_adjuntos,
+  #       exports_csv, backups_automaticos]
+
+  limite_tamano_mb: 0       # Tamaño máximo por archivo en MB (0 = sin límite)
+  cdn: false                # ¿Los archivos públicos se sirven via CDN?
+  cdn_proveedor: ""         # cloudfront | cloudflare | fastly | none
+  antivirus_scan: false     # ¿Escanear uploads antes de almacenar?
+  acceso: ""                # public | private | signed_urls | mixed
+  lifecycle_dias: 0         # Después de N días, mover a storage frío (0 = nunca)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 7 ❙ SEARCH & INDEXING
+# required: false  ·  omit_if: [sistema sin búsqueda full-text]
+# applies_to: [web_saas, hibrido, agente_ai]
+# ─────────────────────────────────────────────────────────────────────────────
+search:
+  activar: false
+  motor: ""
+  # postgresql_fts  → Full-text search de PostgreSQL (sin infra extra)
+  # elasticsearch   → Para volúmenes grandes o búsquedas complejas
+  # meilisearch     → Rápido, self-hosted, buen DX
+  # algolia         → Managed, caro, excelente UX
+  # typesense       → Open source alternativa a Algolia
+  # none
+
+  tipo_busqueda: []
+  # full_text | fuzzy | semantic (embeddings) | filtros_faceta | autocomplete
+
+  indexacion: ""
+  # realtime     → al guardar/modificar registro
+  # background   → job asíncrono post-escritura
+  # scheduled    → re-index periódico (útil para ES/Meilisearch)
+
+  vectorial: false
+  # true si el sistema necesita búsqueda semántica (agentes AI, RAG, etc.)
+  vector_db: ""
+  # pgvector | pinecone | weaviate | chroma | qdrant | none
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 8 ❙ FRONTEND, UI & TIEMPO REAL
+# required: true  ·  omit_if: [tipo_entrega == "api_backend"]
+# ─────────────────────────────────────────────────────────────────────────────
+frontend:
+  renderizado: ""
+  # react19          → Server + Client Components (Next.js 15)
+  # jinja2           → SSR + HTMX + PicoCSS (FastAPI SSR)
+  # react18_spa      → SPA + MUI (FastAPI SPA)
+  # wails_webview    → Desktop Wails v2
+  # pywebview        → Desktop PyWebview
+  # electron_react   → Desktop Electron
+
+  ui_library: ""
+  # shadcn_ui | mui | antd | picocss | tailwind_headless | vuetify | none
+
+  validacion: ""
+  # zod | pydantic | go_validator | htmx_native | joi | none
+
+  tiempo_real: ""
+  # socketio     → Bidireccional full-duplex (chat, colaboración)
+  # websocket    → WebSocket nativo
+  # sse          → Server-Sent Events (notificaciones one-way, dashboards)
+  # htmx_polling → Polling HTMX cada N segundos (simple, bajo costo)
+  # none
+
+  internacionalizacion:
+  # ⚠️  Ausente en v1. Define esto antes de escribir la primera cadena de texto.
+    activar: false
+    idioma_default: "es_MX"
+    idiomas_adicionales: []   # Ej: ["en_US", "es_ES", "pt_BR"]
+    formato_fecha: "DD/MM/YYYY"
+    formato_moneda: "MXN"
+    zona_horaria_default: "America/Mexico_City"
+    library: ""              # i18next | next_intl | babel_i18n | none
+
+  accesibilidad:
+  # ⚠️  Ausente en v1. Requerido legalmente en sistemas de gobierno/educación.
+    nivel_wcag: ""
+    # AA (mínimo aceptable) | AAA (máximo) | none (proyectos internos)
+    testing_tool: ""
+    # axe | wave | lighthouse | manual | none
+    requerido_legalmente: false
+
+  responsive:
+    pwa: false              # ¿Progressive Web App (installable, offline)?
+    breakpoints: []         # Ej: ["mobile_320", "tablet_768", "desktop_1280"]
+    mobile_first: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 9 ❙ CONTRATOS, APIs & DOCUMENTACIÓN
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+api_contratos:
+  especificacion: ""
+  # openapi_31 | swagger | fastapi_autodocs | nextjs_api_routes | grpc | graphql | none
+
+  protocolos_inbound: []
+  # http_rest | server_actions | websocket | htmx_endpoints | cli | grpc
+
+  protocolos_outbound: []
+  # repository_interfaces | printer_service | payment_gateway
+  # external_api_client | message_queue | webhook_emitter
+
+  regla_aislamiento: ""
+  # domain_no_importa_frameworks → El dominio no depende de FastAPI/Express/etc.
+  # usecases_solo_conocen_ports  → UseCases solo hablan con interfaces
+  # tenant_filter_automatico     → BaseRepository aplica tenant automáticamente
+
+  versionado_api: ""
+  # semver_url   → /api/v1/, /api/v2/
+  # header       → Accept-Version: 2024-01-01
+  # date_based   → YYYY-MM-DD en headers
+  # none         → Sin versioning (proyectos internos o MVP)
+
+  acl:
+    activar: false
+    # Anti-Corruption Layer para aislar sistemas legacy o terceros
+    sistemas: []
+    estrategia: ""  # adapter | facade | translator_queue | sidecar
+
+  rate_limiting:
+    activar: false
+    estrategia: ""  # global | por_usuario | por_endpoint | por_tenant
+    limite_default: ""   # Ej: "100 req/min por usuario"
+    herramienta: ""      # nginx | cloudflare | fastapi_slowapi | express_limiter
+
+  documentacion:
+    ubicacion: ""        # ./specs/ | ./docs/ | inline | url_externa
+    adr_activar: false
+    # Architecture Decision Records: documentar POR QUÉ se tomó cada decisión
+    # arquitectónica importante y qué alternativas se descartaron.
+    adr_ubicacion: ""    # ./docs/adr/ | ./adr/
+    runbook_activar: false
+    # Runbooks: procedimientos paso a paso para operaciones y resolución de incidentes
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 10 ❙ ESTRATEGIA AI + FALLBACK (integración LLM simple)
+# required: false  ·  omit_if: [sin integración LLM]
+# NOTA: Si tipo_entrega == "agente_ai", también llenar SECCIÓN 11.
+# ─────────────────────────────────────────────────────────────────────────────
+ai_integracion:
+  activar: false
+
+  casos_de_uso: []
+  # generacion_contenido | rag_busqueda | clasificacion | asistente_chat
+  # analisis_codigo | resumen | extraccion_datos | otro: ""
+
+  proveedor_primario: ""
+  # openai | anthropic | google | mistral | local_ollama | multi_router
+  modelo: ""              # Ej: "gpt-4o", "claude-sonnet-4-5", "gemini-1.5-pro"
+
+  proveedor_fallback: ""  # Si el primario falla, usar este
+  modelo_fallback: ""
+
+  fallback_strategy: []
+  # retry_backoff     → Reintentar con backoff exponencial (max N intentos)
+  # proveedor_secundario → Cambiar a proveedor_fallback
+  # cache_ttl         → Servir respuesta cacheada
+  # regla_estatica    → Respuesta predefinida si LLM no responde
+  # degradacion_elegante → Mostrar "servicio no disponible, intente después"
+
+  guardrails: []
+  # schema_validation  → Validar que respuesta cumple el schema esperado
+  # llm_as_judge       → Otro LLM evalúa la respuesta antes de mostrarla
+  # filtro_contenido   → Moderación de contenido (OpenAI Moderation API, etc.)
+  # rate_limit         → Límite de requests por usuario por minuto
+  # presupuesto_tokens → Máximo de tokens por request o por usuario/día
+
+  presupuesto_mensual_usd: 0
+  # Cuánto puedes gastar en API de LLMs por mes.
+  # 0 = sin límite definido (no recomendable en producción)
+
+  prompt_management: ""
+  # inline_code       → Prompts en el código (fácil pero difícil de versionar)
+  # archivos_yaml     → Prompts en archivos .yaml o .md versionados en git
+  # langsmith         → LangSmith prompt hub
+  # helicone          → Helicone para observabilidad + prompts
+  # none
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 11 ❙ ARQUITECTURA DE AGENTES
+# required: true si tipo_entrega == "agente_ai"
+# omit_if: [tipo_entrega != "agente_ai" AND ai_integracion.activar == false]
+# ⚠️  COMPLETAMENTE AUSENTE EN v1. Crítico para CyberSec Autopilot y similares.
+# ─────────────────────────────────────────────────────────────────────────────
+agentes:
+  activar: false
+
+  topologia: ""
+  # sequential      → Agentes en cadena A→B→C (simple, predecible)
+  # parallel        → Agentes en paralelo con merge al final
+  # hierarchical    → Supervisor agent → sub-agentes especializados
+  # graph           → DAG de agentes (LangGraph, Google ADK style)
+  # swarm           → Agentes peer-to-peer sin orquestador central
+  # reactive        → Agentes event-driven, responden a eventos del sistema
+
+  orquestador: ""
+  # langchain | langgraph | google_adk | autogen | crewai | custom | none
+
+  agentes_definidos:
+  # Cada agente tiene un nombre, rol, herramientas y alcance de permisos.
+    - nombre: ""
+      rol: ""             # Descripción de su responsabilidad única
+      tools: []           # Herramientas/funciones que puede invocar
+      modelo: ""          # LLM específico para este agente (puede diferir del principal)
+      max_tokens: 0       # Presupuesto de tokens por invocación
+      temperatura: 0.0    # 0.0 = determinista, 1.0 = creativo
+      permisos: []        # Qué puede hacer: leer_db | escribir_db | ejecutar_cmd | llamar_api
+      puede_delegatar: false  # ¿Puede invocar otros agentes?
+
+  memoria:
+    short_term: ""
+    # in_context      → Solo lo que cabe en el context window (más simple)
+    # redis_session   → Estado de conversación en Redis por session_id
+    # db_episodico    → Últimas N interacciones guardadas en DB
+
+    long_term: ""
+    # none            → Sin memoria persistente entre sesiones
+    # vector_db       → Embeddings en pgvector/Chroma/Pinecone (RAG)
+    # relational_db   → Hechos estructurados en PostgreSQL
+    # hybrid          → Vector para semántico + relacional para hechos
+
+    contexto_compartido: ""
+    # blackboard      → Estado compartido en Redis/DB que todos los agentes leen
+    # message_passing → Cada agente pasa contexto explícitamente al siguiente
+    # event_bus       → Publicar/suscribir eventos entre agentes
+
+  context_window:
+    estrategia: ""
+    # full_history      → Enviar todo el historial (simple pero caro en tokens)
+    # sliding_window    → Últimos N mensajes + resumen comprimido
+    # summary_buffer    → Resumir automáticamente al llegar a N tokens
+    # selective         → Solo contexto relevante al task actual
+    max_tokens_contexto: 0
+    modelo_resumen: ""  # Modelo barato para comprimir historial (ej: haiku)
+
+  human_in_the_loop:
+  # Puntos donde el agente DEBE esperar aprobación humana antes de continuar.
+  # Crítico para acciones destructivas o de alto impacto.
+    activar: false
+    checkpoints: []
+    # Ej: ["antes_de_ejecutar_exploit", "antes_de_modificar_produccion",
+    #       "cuando_confianza_<_threshold", "antes_de_enviar_reporte_final"]
+    timeout_espera: ""   # Ej: "24h" (después, escalar o cancelar automáticamente)
+    canal_notificacion: ""  # slack | email | webhook | telegram
+
+  evaluacion_agentes:
+  # ⚠️  Los sistemas de agentes sin evaluación son cajas negras.
+    activar: false
+    metricas: []
+    # task_completion_rate | latencia_p50_p99 | costo_por_run
+    # hallucination_rate | tool_call_accuracy | human_approval_rate
+    herramienta: ""     # langsmith | helicone | phoenix | custom_logging
+    benchmark_dataset: false  # ¿Tienes un dataset de casos de prueba esperados?
+
+  seguridad_agentes:
+  # Agentes autónomos con acceso a herramientas son un vector de ataque.
+    prompt_injection_guardrails: false
+    # ¿Validar que input externo no pueda secuestrar instrucciones del agente?
+    scope_permisos_minimos: false
+    # ¿Cada agente tiene SOLO los permisos que necesita (least privilege)?
+    audit_trail_decisiones: false
+    # ¿Cada acción automática queda registrada con contexto + razonamiento?
+    rollback_acciones: false
+    # ¿Acciones destructivas pueden deshacerse (soft-delete, snapshot antes)?
+    sandbox_ejecucion: ""
+    # none | docker | firecracker | e2b (para agentes que ejecutan código)
+
+  costos_agentes:
+    presupuesto_por_run_usd: 0.0
+    # Máximo costo aceptable por ejecución completa de un pipeline de agentes.
+    limite_tokens_por_pipeline: 0
+    alerta_costo: false         # ¿Alerta si un run supera el umbral?
+    runaway_detection: false
+    # ¿Detectar si un agente entra en loop y está consumiendo tokens infinitamente?
+    runaway_max_iteraciones: 0  # Forzar stop después de N iteraciones sin progreso
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 12 ❙ SEGURIDAD, AUTH & COMPLIANCE
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+seguridad:
+  auth: ""
+  # nextauth_v5     → Next.js, Credentials + OAuth providers
+  # jwt_cookies     → JWT en HttpOnly Cookies (XSS-safe)
+  # jwt_headers     → JWT en Authorization header (mobile-friendly)
+  # oauth2_oidc     → Delegación a IdP externo (Google, Azure AD, etc.)
+  # mtls            → Mutual TLS (máxima seguridad, microservicios)
+  # api_key         → Para APIs internas o B2B (sin UI de login)
+  # session_db      → Sessions en DB (traditional, stateful)
+
+  hashing: ""
+  # argon2id → Más seguro, recomendado para nuevos proyectos (lento adrede)
+  # bcrypt   → Estándar probado, ampliamente soportado
+  # scrypt   → Alternativa a bcrypt, más resistente a GPU attacks
+
+  authz: ""
+  # rbac                 → Roles fijos (admin/manager/user)
+  # abac                 → Atributos dinámicos (más flexible, más complejo)
+  # permissions_granulares → Lista explícita de permisos por usuario
+  # ownership_based      → Solo el dueño puede editar su recurso
+
+  multi_tenant:
+    estrategia: ""
+    # single_tenant        → Una instancia por cliente
+    # shared_db_row_level  → tenant_id en cada tabla (más común)
+    # schema_por_tenant    → Schema separado en PostgreSQL por cliente
+    # db_por_tenant        → DB separada (máximo aislamiento, caro)
+    tenant_id_en_entidades: false
+    row_level_security: false  # PostgreSQL RLS (refuerzo a nivel DB)
+
+  encriptacion:
+    at_rest: ""         # aes256 | transparent_db | none
+    in_transit: ""      # tls13 | tls12 | none
+    field_level_pii: false
+    # ¿Cifrar campos con datos personales sensibles (CURP, RFC, datos médicos)?
+    masking_logs: false
+    # ¿Enmascarar datos sensibles antes de escribir en logs?
+
+  compliance: []
+  # gdpr | lfpdppp | hipaa | pci_dss | soc2 | iso27001 | none
+  # LFPDPPP = Ley Federal de Protección de Datos Personales (México)
+  # ⚠️  Si hay datos personales de mexicanos, LFPDPPP aplica siempre.
+
+  auditoria:
+    activar: false
+    eventos_auditados: []
+    # login | logout | create | update | delete | permission_change | export
+    retencion_dias: 365   # Mínimo 1 año para compliance regulatorio
+    inmutable: false      # ¿Los logs de auditoría son append-only y no modificables?
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 13 ❙ TESTING, CALIDAD & HERRAMIENTAS
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+testing_calidad:
+  modo: ""
+  # strict      → TDD puro, tests antes de código
+  # flexible    → Tests durante o después del desarrollo
+  # test_after  → Tests después de tener el feature funcionando
+  # minimal     → Solo smoke tests y tests de regresión críticos
+
+  coverage_unit: 0          # % mínimo aceptable de cobertura unitaria (recomendado: 80)
+  coverage_integration: ""  # required | optional | none
+  coverage_e2e: ""          # critical_paths | full | none
+
+  testing_framework: ""
+  # vitest (nextjs) | go_test (go) | pytest (python)
+
+  package_manager: ""
+  # pnpm | npm | go_mod | uv (Python moderno, recomendado sobre pip)
+
+  linter: ""     # eslint_prettier | golangci_lint | ruff_isort
+  type_check: "" # tsc_strict | mypy | go_vet | pyright
+
+  contract_testing: false
+  # ¿Validar que la API cumple el contrato OpenAPI automáticamente en CI?
+  mutation_testing: false
+  # ¿Verificar que los tests detectan bugs reales (Stryker, mutmut)?
+  load_testing: false
+  # ¿Tests de carga antes de producción? (k6, Locust, hey)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 14 ❙ OBSERVABILIDAD, SLI/SLO & ALERTAS
+# required: true  ·  omit_if: [criticalidad == "low" y equipo == 1]
+# ⚠️  v1 tenía métricas pero sin contratos SLA/SLO/SLI explícitos.
+# ─────────────────────────────────────────────────────────────────────────────
+observabilidad:
+  slo:
+  # Service Level Objectives: contratos de confiabilidad.
+  # Sin SLOs, "¿está fallando el sistema?" es una pregunta sin respuesta objetiva.
+    uptime_target: ""       # Ej: "99.5%" (43.2h downtime/año permitido)
+    latencia_p99: ""        # Ej: "500ms" (99% de requests bajo 500ms)
+    error_rate_max: ""      # Ej: "0.1%" (máximo 0.1% de requests con error)
+    error_budget_mes: ""    # Ej: "21.6 min" (cuánto puedes estar caído/mes)
+
+  logging:
+    formato: ""             # json_estructurado | texto_plano | zerolog
+    nivel_prod: ""          # warn | error (NUNCA debug en prod: costo + seguridad)
+    destino: ""             # stdout_loki | cloudwatch | datadog | elastic | none
+    no_loggear: []
+    # Campos que NUNCA deben aparecer en logs por seguridad/compliance.
+    # Ej: ["password", "token", "cvv", "curp", "datos_medicos"]
+    retencion_logs_dias: 30
+
+  metricas:
+    framework: ""           # prometheus | opentelemetry | cloud_native | datadog | none
+    key_metrics: []
+    # request_duration | error_rate | business_metric | queue_depth
+    # active_users | conversion_rate | agent_run_cost | agent_latency
+
+  tracing:
+    activar: false
+    provider: ""            # jaeger | zipkin | datadog | honeycomb | none
+    sample_rate: 0.01       # 1% en prod (0.01). 100% en dev (1.0).
+
+  alertas:
+    canales: []             # slack | pagerduty | email | webhook | telegram
+    umbrales:
+      error_rate: ""        # Ej: ">1% en 5min"
+      latencia: ""          # Ej: "p99 > 2s sostenido 3min"
+      cpu_mem: ""           # Ej: "CPU > 85% por 10min"
+      disco: ""             # Ej: "disco > 80%"
+      costo_llm: ""         # Ej: "> $50 USD en un día"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 15 ❙ DEPLOY, RUNTIME & CI/CD
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+deploy_runtime:
+  plataforma: ""
+  # vercel | cloud_run | railway | fly_io | kubernetes | docker_compose
+  # binario_nativo (wails/pyinstaller) | vps_simple
+
+  escalamiento:
+    estrategia: ""          # horizontal | vertical | serverless | manual
+    instancias: ""          # Ej: "1/3" (min/max)
+    autoscaling_trigger: "" # Ej: "CPU > 70%" o "queue_depth > 100"
+
+  runtime:
+    timeout_seg: 60
+    health_endpoint: "/health"
+    graceful_shutdown: true   # ¿Esperar requests en vuelo al hacer deploy?
+    containerizado: false
+
+  pipeline:
+    provider: ""            # github_actions | gitlab_ci | circleci | jenkins
+    etapas:
+      lint: false
+      type_check: false
+      test: false
+      security_scan: false  # SAST: semgrep, bandit, gosec, snyk
+      build: false
+      deploy_staging: false
+      manual_approval: false  # ¿Requiere aprobación humana antes de prod?
+      deploy_prod: false
+      smoke_test_post_deploy: false
+
+    rollback: ""
+    # immediate     → Revertir inmediatamente si smoke test falla
+    # blue_green    → Mantener versión anterior lista para switch instantáneo
+    # canary        → Enviar X% del tráfico a nueva versión primero
+    # feature_flag  → Kill switch en feature flags
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 16 ❙ ESTRATEGIA MULTI-ENTORNO
+# required: false  ·  omit_if: [equipo == 1 y MVP]
+# ⚠️  Ausente en v1. Crítico para equipos y para CI/CD con staging.
+# ─────────────────────────────────────────────────────────────────────────────
+multi_entorno:
+  activar: false
+  entornos:
+  # Definir qué entornos existen y su propósito.
+    - nombre: "development"
+      proposito: "Desarrollo local individual"
+      acceso: "solo_desarrollador"
+      db: "sqlite o postgresql_local"
+    - nombre: "staging"
+      proposito: "QA, demos y pruebas de integración"
+      acceso: "equipo_interno"
+      db: "postgresql con datos sanitizados"
+    - nombre: "production"
+      proposito: "Usuarios reales"
+      acceso: "solo_pipeline_automatico"
+      db: "postgresql con backup diario"
+
+  preview_deployments: false
+  # ¿Crear un entorno temporal por cada PR/branch? (Vercel, Railway)
+
+  variables_entorno:
+    estrategia: ""          # .env_por_entorno | config_service | vault | aws_ssm
+    secretos_en_git: false  # NUNCA debe ser true
+    herramienta_secretos: ""  # dotenv | vault | aws_ssm | github_secrets | none
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 17 ❙ NOTIFICATIONS & COMUNICACIONES
+# required: false  ·  omit_if: [sistema sin notificaciones a usuarios]
+# ⚠️  Ausente en v1. El bounded context existía pero sin detalle de proveedores.
+# ─────────────────────────────────────────────────────────────────────────────
+notificaciones:
+  activar: false
+  canales: []
+  # email | sms | push_web | push_movil | whatsapp | slack | webhook | telegram
+
+  proveedores:
+    email: ""     # sendgrid | resend | ses | postmark | smtp_propio
+    sms: ""       # twilio | vonage | sinch | infobip
+    push: ""      # firebase_fcm | onesignal | pusher
+    whatsapp: ""  # twilio | meta_cloud_api | n8n_whatsapp
+
+  plantillas:
+    estrategia: ""  # codigo | herramienta_externa (sendgrid, etc.) | archivos_html
+    versionadas: false  # ¿Plantillas en control de versiones?
+
+  frecuencia_limite: false
+  # ¿Limitar cuántas notificaciones puede recibir un usuario por tiempo?
+  # (Anti-spam, crítico para retención de usuarios)
+  limite: ""  # Ej: "máx 3 emails/hora por usuario"
+
+  unsubscribe: false  # ¿Mecanismo de opt-out? (Requerido por LFPDPPP/GDPR)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 18 ❙ CAPACITY PLANNING
+# required: false  ·  omit_if: [MVP sin expectativas de escala]
+# ⚠️  Ausente en v1. Sin estos inputs, las decisiones de infra son ciencia ficción.
+# ─────────────────────────────────────────────────────────────────────────────
+capacity_planning:
+  activar: false
+  usuarios_actuales: 0
+  usuarios_3_meses: 0
+  usuarios_12_meses: 0
+  usuarios_concurrentes_peak: 0
+  requests_por_segundo_promedio: 0
+  requests_por_segundo_peak: 0
+  tamano_promedio_db_gb: 0.0
+  crecimiento_db_mensual_gb: 0.0
+  eventos_peak: ""
+  # Ej: "fin de quincena", "inicio de ciclo escolar", "Black Friday"
+  # Define cuándo esperas el tráfico máximo.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 19 ❙ EVOLUCIÓN, VERSIONADO & COMPLEJIDAD
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+evolucion:
+  api_versioning: ""
+  # semver_url | header | date_based | none
+
+  deprecation_politica:
+    aviso_dias: 90
+    sunset_dias: 180
+    comunicacion: ""    # changelog | email | in_app | docs
+
+  schema_strategy: ""
+  # expand_contract → Agregar campos sin romper, quitar en ciclo posterior
+  # dual_write      → Escribir en viejo y nuevo formato simultáneamente
+  # blue_green_db   → DB separada para nueva versión con switch
+  # big_bang        → Migrar todo a la vez (riesgo alto, solo en proyectos chicos)
+
+  feature_flags:
+    herramienta: ""     # unleash | launchdarkly | flagsmith | env_var | none
+    rollout: ""         # porcentaje_usuarios | segmento | canary | kill_switch
+
+  complexity_score: 0   # 1 (trivial) → 10 (enterprise-grade)
+  # Para calibrar expectativas de tiempo, testing y recursos.
+
+  factores_criticos: []
+  # logica_negocio | integraciones | volumen_datos | seguridad_regulatoria
+  # tiempo_real | multi_tenant | hardware_fisico | compliance
+
+  top_riesgos:
+  # Los riesgos más probables que pueden hacer fallar el proyecto.
+    - riesgo: ""
+      impacto: ""   # alto | medio | bajo
+      mitigacion: ""
+    - riesgo: ""
+      impacto: ""
+      mitigacion: ""
+    - riesgo: ""
+      impacto: ""
+      mitigacion: ""
+
+  enfoque_entrega: ""
+  # mvp_iterativo    → Entregar features mínimas funcionando, iterar
+  # vertical_slice   → Un flujo completo end-to-end por sprint
+  # horizontal_layer → Primero toda la infra, luego features
+  # big_bang         → Todo junto al final (evitar en proyectos > 4 semanas)
+
+  fases:
+  # Descomponer el proyecto en fases con alcance y fecha.
+    - fase: "Fase 1 - MVP"
+      alcance: []       # Features incluidas en esta fase
+      fecha_objetivo: ""
+      criterio_exito: ""
+    - fase: "Fase 2 - Core"
+      alcance: []
+      fecha_objetivo: ""
+      criterio_exito: ""
+
+  prioridades:
+  # P0 = bloqueante del MVP, P1 = importante, P2 = nice-to-have
+    p0: []
+    p1: []
+    p2: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 20 ❙ HARDWARE FÍSICO
+# required: false  ·  omit_if: [sin hardware periférico]
+# applies_to: [app_desktop, hibrido, pos_systems]
+# ─────────────────────────────────────────────────────────────────────────────
+hardware_fisico:
+  activar: false
+  impresora_termica:
+    activar: false
+    libreria: ""      # node_escpos | go_escpos | python_escpos
+    modelo: ""
+    precio_mxn: 0
+  bascula_serial:
+    activar: false
+    libreria: ""      # pyserial | go_serial | node_serialport
+    protocolo: ""     # RS232 | USB_HID | Bluetooth
+    modelo: ""
+    precio_mxn: 0
+  biometrico:
+    activar: false
+    tipo: ""          # huella_dactilar | reconocimiento_facial | tarjeta_rfid
+    libreria: ""      # ctypes_dll | hid_api | serial_rs232
+    modelo: ""
+    precio_mxn: 0
+  otros: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 21 ❙ DOMAIN MODELING (DDD Lite → Pro)
+# required: false  ·  omit_if: [complexity_score < 5]
+# ─────────────────────────────────────────────────────────────────────────────
+domain_modeling:
+  activar: false
+  entidades: []         # Ej: [User, Order, Product, Appointment]
+  value_objects: []     # Ej: [Money, Email, Address, DateRange]
+  aggregates: []        # Ej: [Order (root) + OrderItem + Payment]
+  invariantes: []
+  # Reglas de negocio que NUNCA deben violarse.
+  # Ej: ["Un Order no puede tener total negativo",
+  #       "Un Appointment no puede solaparse con otro del mismo doctor"]
+  lenguaje_ubicuo: []   # Glosario de términos del dominio acordados con el negocio
+  eventos_dominio: false
+  # ¿El dominio emite eventos (OrderPlaced, AppointmentCancelled)?
+  eventos_lista: []
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 22 ❙ CONSISTENCIA & TRANSACCIONES
+# required: false  ·  omit_if: [solo operaciones de lectura o sin estado compartido]
+# ─────────────────────────────────────────────────────────────────────────────
+consistencia:
+  tipo: ""
+  # fuerte    → ACID, una sola DB (más predecible)
+  # eventual  → BASE, sistemas distribuidos (más escalable, más complejo)
+  # mixta     → ACID para operaciones críticas, eventual para reportes
+
+  estrategia: ""
+  # transacciones_db   → BEGIN/COMMIT (recomendado para monolitos)
+  # saga_coreografia   → Cada servicio publica evento y reacciona (event-driven)
+  # saga_orquestacion  → Orquestador central coordina el flujo
+
+  concurrencia: ""
+  # optimistic_locking  → Versión/timestamp, falla si alguien editó antes
+  # pessimistic_locking → SELECT FOR UPDATE, bloquea el registro
+  # ninguna             → Acepto condiciones de carrera (solo para bajo tráfico)
+
+  idempotencia: ""
+  # required → Operaciones críticas (pagos, envíos) son idempotentes
+  # optional → Intentar pero no garantizado
+  # none     → Sin requerimiento
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 23 ❙ RESILIENCIA & FALLOS
+# required: false  ·  omit_if: [criticalidad == "low"]
+# ─────────────────────────────────────────────────────────────────────────────
+resiliencia:
+  estrategias: []
+  # retry_backoff      → Reintentar con espera exponencial
+  # circuit_breaker    → Cortar llamadas si el servicio externo está fallando
+  # timeout            → No esperar más de N segundos
+  # bulkhead           → Aislar fallos de un componente para que no cascaden
+  # graceful_degradation → Servir versión reducida si algo falla
+
+  fallback_general: ""
+  # Qué hace el sistema si un servicio crítico está caído.
+  # Ej: "Si el LLM no responde, retornar regla estática y alertar al equipo."
+
+  chaos_testing: false
+  # ¿Probar deliberadamente fallos en entorno de staging? (Chaos Monkey)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 24 ❙ PERFORMANCE & ESCALABILIDAD
+# required: false  ·  omit_if: [capacity_planning.usuarios_concurrentes_peak < 50]
+# ─────────────────────────────────────────────────────────────────────────────
+performance:
+  caching_strategy: ""
+  # read_through  → Cache delante de DB para lecturas frecuentes
+  # write_through → Escribir en cache Y DB simultáneamente
+  # cache_aside   → App maneja cache manualmente
+  # none
+
+  db_optimizacion:
+    indices: false         # ¿Definir índices explícitamente para queries críticos?
+    query_analysis: false  # ¿Revisar EXPLAIN ANALYZE antes de release?
+    connection_pool: false # ¿Configurar pool de conexiones (PgBouncer, etc.)?
+
+  pagination: ""
+  # offset  → LIMIT/OFFSET (simple pero lento en páginas altas)
+  # cursor  → Basado en cursor (más eficiente para grandes datasets)
+
+  edge_cdn: false
+  # ¿Assets estáticos en CDN? ¿Edge functions para latencia baja global?
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 25 ❙ MODELO DE ERRORES
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+modelo_errores:
+  formato: ""
+  # rfc7807 → Estándar industria: {type, title, status, detail, instance}
+  # custom  → Formato propio {error, message, code, trace_id}
+
+  tipos: []
+  # domain_errors     → Violaciones de reglas de negocio
+  # validation_errors → Input inválido del usuario
+  # auth_errors       → Autenticación/autorización fallida
+  # infra_errors      → DB caída, servicio externo no disponible
+  # ai_errors         → LLM timeout, respuesta inválida, guardrail disparado
+
+  logging_errores: ""
+  # estructurado → JSON con trace_id, user_id, contexto (recomendado)
+  # basico       → Solo mensaje y stacktrace
+
+  error_tracking: ""
+  # sentry | bugsnag | rollbar | glitchtip (self-hosted) | none
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 26 ❙ SEGURIDAD AVANZADA
+# required: false  ·  omit_if: [criticalidad == "low" y sin datos sensibles]
+# ─────────────────────────────────────────────────────────────────────────────
+seguridad_avanzada:
+  threat_modeling: ""
+  # stride    → Spoofing, Tampering, Repudiation, Info Disclosure, DoS, Elevation
+  # basico    → Identificar los 5 vectores más probables del sistema
+  # none
+
+  protecciones: []
+  # csrf              → CSRF tokens en formularios (relevante para SSR)
+  # rate_abuse        → Limitar requests por IP/usuario
+  # replay_attacks    → Nonces o timestamps en requests sensibles
+  # input_sanitization → Sanitizar HTML para prevenir XSS
+  # sql_injection     → Usar ORM o queries parametrizadas (SIEMPRE)
+  # path_traversal    → Validar rutas de archivos en uploads
+
+  owasp_top10: false
+  # ¿Revisar el sistema contra OWASP Top 10 antes de release?
+  dependency_scan: false
+  # ¿Escanear dependencias por vulnerabilidades? (Snyk, Dependabot, Safety)
+  secret_scan: false
+  # ¿Detectar secretos hardcodeados en el código? (TruffleHog, git-secrets)
+  penetration_test: false
+  # ¿Pen test profesional antes de go-live? (Crítico para criticalidad == "high")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 27 ❙ CONFIGURACIÓN & SECRETOS
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+configuracion_secretos:
+  config_strategy: ""
+  # env_simple          → .env por entorno, cargado con python-dotenv/godotenv
+  # config_por_entorno  → config.dev.yaml, config.prod.yaml
+  # config_service      → Consul, AWS AppConfig, Firebase Remote Config
+
+  secretos: ""
+  # env_vars       → En variables de entorno (OK para proyectos pequeños)
+  # github_secrets → Secrets en GitHub Actions (para CI/CD)
+  # vault          → HashiCorp Vault (para high/critical)
+  # aws_ssm        → AWS Parameter Store
+  # doppler        → Gestor de secretos con UI amigable
+
+  rotacion_secretos: false
+  # ¿Los secretos tienen fecha de expiración y se rotan automáticamente?
+  # Crítico para cumplimiento ISO 27001 y SOC2.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 28 ❙ DATA LIFECYCLE & CLASIFICACIÓN
+# required: false  ·  omit_if: [sin datos personales y sin compliance requerido]
+# ⚠️  v1 solo tenía retención. La clasificación de datos es previa a toda decisión.
+# ─────────────────────────────────────────────────────────────────────────────
+data_lifecycle:
+  clasificacion:
+  # Catalogar qué datos maneja el sistema y su nivel de sensibilidad.
+  # Esto determina: encriptación, acceso, retención, compliance aplicable.
+    - tipo: ""
+      nivel: ""         # publico | interno | confidencial | restringido
+      ejemplos: []
+      ley_aplicable: "" # lfpdppp | gdpr | hipaa | none
+  
+  operaciones: []
+  # archivado        → Mover datos viejos a almacenamiento frío
+  # anonimizacion    → Eliminar PII de datos históricos (para analytics)
+  # eliminacion_legal → Derecho al olvido (GDPR/LFPDPPP request)
+  # pseudonimizacion → Reemplazar PII por tokens reversibles
+
+  data_lineage: false
+  # ¿Rastrear de dónde viene cada dato y cómo fue transformado?
+  # Relevante para auditoría y debugging en sistemas de agentes con RAG.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 29 ❙ INCIDENT RESPONSE & ON-CALL
+# required: false  ·  omit_if: [criticalidad == "low"]
+# ⚠️  COMPLETAMENTE AUSENTE EN v1. ¿Qué pasa cuando falla a las 3am?
+# ─────────────────────────────────────────────────────────────────────────────
+incident_response:
+  activar: false
+
+  runbook: false
+  # ¿Documento con pasos exactos para resolver los incidentes más comunes?
+  runbook_ubicacion: ""     # ./docs/runbooks/ | Notion | Confluence
+
+  on_call:
+    activar: false
+    herramienta: ""         # pagerduty | opsgenie | victorops | slack_oncall
+    rotacion: ""            # semanal | quincenal | por_servicio
+    escalacion:             # Qué pasa si el primero no responde
+      nivel_1: ""           # Ej: "Dev responsable del feature"
+      nivel_2: ""           # Ej: "Tech Lead"
+      nivel_3: ""           # Ej: "CTO / dueño del negocio"
+    tiempo_respuesta: ""    # Ej: "15min para P0, 4h para P1"
+
+  post_mortem:
+    activar: false
+    # ¿Documentar qué pasó, por qué y cómo evitarlo después de incidentes P0/P1?
+    template: ""            # URL del template de post-mortem
+    blameless: true         # Cultura de aprendizaje, sin culpas (recomendado)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 30 ❙ TECHNICAL DEBT STRATEGY
+# required: false  ·  omit_if: [MVP de menos de 2 semanas]
+# ⚠️  AUSENTE EN v1. La deuda técnica no gestionada es el principal asesino
+# de proyectos en la etapa de "mantener / escalar".
+# ─────────────────────────────────────────────────────────────────────────────
+technical_debt:
+  activar: false
+  tracking: ""
+  # jira_tickets  → Issues etiquetadas como "tech-debt"
+  # github_issues → Issues en el repo
+  # notion        → Página de deuda técnica
+  # ninguno       → No se rastrea (no recomendado)
+
+  presupuesto_refactor: ""
+  # Ej: "20% de cada sprint reservado para deuda técnica"
+  # Ej: "1 semana de cada 2 meses dedicada a refactor"
+
+  criterio_pagar: ""
+  # ¿Cuándo es obligatorio pagar deuda técnica antes de avanzar?
+  # Ej: "Si el bug count de una clase > 3 en el sprint, refactorizar antes del siguiente"
+
+  dependency_updates: ""
+  # manual | dependabot | renovate | ninguno
+  # Las dependencias desactualizadas son deuda técnica + vector de seguridad.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 31 ❙ LEGAL & COMPLIANCE
+# required: false  ·  omit_if: [proyecto interno sin datos de usuarios]
+# ⚠️  AUSENTE EN v1. Ignorado hasta que un abogado o regulador lo exige.
+# ─────────────────────────────────────────────────────────────────────────────
+legal:
+  terminos_servicio: false    # ¿El sistema requiere que usuarios acepten ToS?
+  politica_privacidad: false  # ¿Hay política de privacidad publicada? (LFPDPPP)
+  aviso_privacidad: false
+  # LFPDPPP: Obligatorio en México para cualquier sitio que recolecte datos.
+
+  dpa: false
+  # Data Processing Agreement: contrato con proveedores que procesan datos de usuarios.
+  # Ej: SendGrid, Stripe, AWS, Google Analytics.
+
+  licenciamiento_oss:
+    audit: false
+    # ¿Verificar que las licencias de dependencias open-source son compatibles?
+    # Ej: GPL-3.0 en una lib puede obligar a open-sourcear tu código.
+    licencias_prohibidas: []
+    # Ej: ["GPL-3.0", "AGPL-3.0"] si el software es propietario
+
+  propiedad_intelectual:
+    codigo: ""  # propietario | mit | apache2 | gpl | otro
+    datos: ""   # ¿Quién es dueño de los datos generados por el sistema?
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 32 ❙ UX & FLUJOS
+# required: false  ·  omit_if: [tipo_entrega == "api_backend" o "cli_tool"]
+# ─────────────────────────────────────────────────────────────────────────────
+ux_flujos:
+  user_journeys:
+  # Flujos principales que el usuario debe poder completar sin fricción.
+    - journey: ""
+      pasos: []
+      happy_path: ""
+      edge_cases: []
+
+  estados_ui:
+    loading: false    # ¿Skeleton loaders o spinners definidos?
+    empty: false      # ¿Estado vacío (primer uso, sin datos) diseñado?
+    error: false      # ¿Estado de error con mensaje claro y acción?
+    success: false    # ¿Confirmación visual de acciones exitosas?
+    offline: false    # ¿Manejo de pérdida de conexión?
+
+  diseno:
+    wireframes: false       # ¿Hay wireframes antes de desarrollar?
+    design_system: false    # ¿Hay un design system o se usa una librería estándar?
+    dark_mode: false
+    animaciones: ""         # none | subtle | full (con prefers-reduced-motion)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 33 ❙ DEVELOPER EXPERIENCE (DX)
+# required: false  ·  omit_if: [equipo == 1]
+# ─────────────────────────────────────────────────────────────────────────────
+developer_experience:
+  repo: ""              # monorepo | multirepo
+  git_strategy: ""      # trunk_based | gitflow | github_flow
+  convenciones: []
+  # conventional_commits | commit_lint | gitmoji | ninguno
+
+  setup_tiempo_min: 0
+  # ¿En cuántos minutos puede un dev nuevo levantar el proyecto localmente?
+  # Objetivo: < 15 minutos. Si > 30, el onboarding está roto.
+
+  makefile_taskfile: false
+  # ¿Hay comandos estándar (make dev, make test, make migrate) documentados?
+
+  devcontainer: false
+  # ¿Entorno de desarrollo reproducible con DevContainers o Docker Compose?
+
+  contribucion:
+    contributing_md: false  # CONTRIBUTING.md con guía de contribución
+    code_review: false      # ¿Toda PR requiere al menos 1 review antes de merge?
+    branch_protection: false # ¿Main/master protegida contra push directo?
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 34 ❙ EVOLUCIÓN DEL SISTEMA
+# required: true  ·  omit_if: []
+# ─────────────────────────────────────────────────────────────────────────────
+evolucion_sistema:
+  compatibilidad: ""
+  # backward_compatible → Cambios no rompen clientes existentes
+  # breaking_allowed    → Versión nueva puede ser incompatible (con aviso)
+
+  estrategia_evolucion: ""
+  # strangler_pattern      → Reemplazar sistema legacy pieza por pieza
+  # refactor_incremental   → Mejorar continuamente sin reescritura
+  # big_rewrite            → Reescribir desde cero (alto riesgo, evitar si posible)
+
+  licencia_codigo: ""   # mit | apache2 | gpl3 | proprietary | pendiente
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECCIÓN 35 ❙ COSTOS & FINOPS
+# required: false  ·  omit_if: [proyecto interno sin costos de nube]
+# ─────────────────────────────────────────────────────────────────────────────
+costos_finops:
+  presupuesto_mensual_usd: 0
+  # Presupuesto total mensual de infraestructura + servicios externos.
+
+  desglose_estimado:
+    hosting: ""       # Ej: "$20/mes Railway Pro"
+    db: ""            # Ej: "$10/mes Railway PostgreSQL"
+    cdn_storage: ""   # Ej: "$5/mes Cloudflare R2"
+    llm_api: ""       # Ej: "$30/mes Anthropic (estimado)"
+    otros: ""         # Emails, SMS, monitoreo, etc.
+
+  alertas_costo: false
+  # ¿Alerta cuando el gasto mensual supera un umbral?
+  umbral_alerta_usd: 0
+
+  optimizacion_continua: false
+  # ¿Revisar costos mensualmente y optimizar?
+  # Ej: Apagar instancias de staging en la noche, limpiar storage no usado.
+
+  free_tier_dependency: false
+  # ¿El sistema depende de free tiers de servicios externos?
+  # Riesgo: los free tiers cambian sin previo aviso.
+  free_tiers_usados: []
+
+# =============================================================================
+# INSTRUCCIONES PARA EL AGENTE brief-to-prd
+# =============================================================================
+# Al procesar este archivo:
+# 1. Validar que secciones 1-4 (required: true) están completas.
+# 2. Para secciones con activar: false, confirmar que omitir es intencional.
+# 3. Si tipo_entrega == "agente_ai", verificar que sección 11 está completa.
+# 4. Generar warnings para campos vacíos ("") en secciones required: true.
+# 5. Producir el PRD ordenado por: Contexto → Arquitectura → Datos → Frontend
+#    → Seguridad → Testing → Deploy → Agentes (si aplica) → Legal → Costos.
+# =============================================================================

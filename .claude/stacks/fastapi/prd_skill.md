@@ -64,17 +64,26 @@ Preguntar si no está claro:
 
 ### Paso 2 — Recopilar contexto
 
-Preguntas si no están respondidas:
+Si el usuario ya tiene un brief completo, leerlo primero:
+- **YAML**: `.claude/templates/PROJECT-BRIEF-FULL-Quantum.yaml` (35 secciones, parsing automático)
+- **Markdown**: `.claude/templates/PROJECT-BRIEF-FULL.md` (35 secciones, llenado manual)
 
-**Negocio:**
+Preguntar SOLO las secciones CRÍTICAS que estén vacías. En orden de prioridad:
+
+**Sección 2 — Negocio (CRÍTICO):**
+- ¿Cuál es el problema concreto que resuelve el sistema y a quién afecta?
 - ¿Cliente único o producto SaaS para vender?
 - ¿Cuántos usuarios simultáneos?
 - ¿Necesita funcionar offline?
 
-**Técnico:**
+**Sección 11 — Agentes AI (si tipo_entrega == agente_ai):**
+- ¿Qué topología de agentes? (Sequential / Hierarchical / Graph)
+- ¿Presupuesto máximo por run?
+
+**Técnico (Secciones 4–10):**
 - ¿Qué módulos son core? ¿Qué puede esperar para v2?
-- ¿Hay hardware físico? (impresora, báscula, lector)
-- ¿Multi-sucursal desde v1?
+- ¿Hay hardware físico? (impresora, báscula, lector) → Sección 20
+- ¿Multi-sucursal desde v1? → afecta multi-tenant en Sección 12
 
 ### Paso 3 — Estructura del PRD
 

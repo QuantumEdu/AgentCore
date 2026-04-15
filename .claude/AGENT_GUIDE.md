@@ -1,5 +1,5 @@
 # .claude/AGENT_GUIDE.md
-# Agent Guide - FlowTask Inc. v1.3
+# Agent Guide - AgentCore v2.3
 
 This guide documents the available agents and their **MANDATORY WORKFLOW** to prevent omissions.
 
@@ -22,15 +22,20 @@ AgentCore v2.0 incluye un sistema de skills reutilizables ubicados en `.agent/sk
 
 ### Skills Principales
 
-1. **brief-to-prd**: Generador interactivo de PRDs desde PROJECT-BRIEF-FULL.yaml
+1. **brief-to-prd**: Generador interactivo de PRDs desde los templates de 35 secciones
    - Ubicación: `.agent/skills/brief-to-prd/`
-   - Función: Lee el Brief, pregunta secciones faltantes, detecta stack, genera PRD + stack_config.yml
+   - Input aceptado:
+     - `PROJECT-BRIEF-FULL-Quantum.yaml` — formato YAML estructurado (parsing automático)
+     - `PROJECT-BRIEF-FULL.md` — formato Markdown (llenado manual por humanos)
+   - Función: Lee el Brief, pregunta secciones faltantes (CRÍTICO → OPCIONAL), detecta stack, genera PRD + stack_config.yml
    - Comando único: Genera ambos artefactos en una ejecución
+   - Las 35 secciones cubren: negocio, arquitectura, datos, frontend, AI, agentes, seguridad, observabilidad, CI/CD, costos y más
 
 2. **stack-generator**: Generador de configuración de stack
    - Ubicación: `.agent/skills/stack-generator/`
-   - Función: Convierte PROJECT-BRIEF-FULL.yaml a stack_config.yml
+   - Función: Convierte `PROJECT-BRIEF-FULL-Quantum.yaml` a stack_config.yml
    - Soporta: Next.js 15, Go+Wails, FastAPI (3 sub-stacks)
+   - Mapea los 35 campos del brief a decisiones técnicas concretas del stack
 
 ### Uso de Skills
 
@@ -38,7 +43,7 @@ Los skills se activan automáticamente cuando el usuario ciertos triggers:
 - "genera PRD desde brief"
 - "del brief al PRD"
 - "interpreta mi brief"
-- O cuando se detecta un PROJECT-BRIEF-FULL.yaml
+- O cuando se detecta un `PROJECT-BRIEF-FULL-Quantum.yaml` o `PROJECT-BRIEF-FULL.md`
 
 Los skills delegan la generación del PRD a skills específicos del stack (prd-nextjs15, prd-fastapi, prd-go-wails).
 
@@ -81,7 +86,7 @@ Para cambiar de stack, usa el script `stack_selector.py`:
 python .claude/scripts/stack_selector.py
 ```
 
-O modifica `PROJECT-BRIEF-FULL.yaml` y usa el skill `brief-to-prd`.
+O modifica `PROJECT-BRIEF-FULL-Quantum.yaml` (YAML) / `PROJECT-BRIEF-FULL.md` (Markdown) y usa el skill `brief-to-prd`.
 
 ---
 
@@ -299,6 +304,6 @@ from passlib.context import CryptContext  # FORBIDDEN
 
 ---
 
-**VERSION**: 2.0
-**LAST UPDATED**: 2026-04-12
-**PROJECT**: AgentCore v2.0 - Multi-Stack Agent System
+**VERSION**: 2.3
+**LAST UPDATED**: 2026-04-14
+**PROJECT**: AgentCore v2.3 - Multi-Stack Agent System

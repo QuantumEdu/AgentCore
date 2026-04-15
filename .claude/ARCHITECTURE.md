@@ -1,7 +1,7 @@
-# Architecture - AgentCore v2.0
+# Architecture - AgentCore v2.3
 
-**Version**: 2.0
-**Last Updated**: 2026-04-12
+**Version**: 2.3
+**Last Updated**: 2026-04-14
 
 ---
 
@@ -27,8 +27,8 @@ AgentCore v2.0 is a reusable `.claude/` infrastructure template for AI-assisted 
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ PROJECT-BRIEF-FULL.yaml                                │
-│ (Structured YAML with 23 sections)                     │
+│ PROJECT-BRIEF-FULL-Quantum.yaml  /  PROJECT-BRIEF-FULL.md │
+│ (35 secciones: YAML estructurado o Markdown para humanos) │
 └────────────────────┬────────────────────────────────────┘
                      │
                      ▼
