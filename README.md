@@ -1,4 +1,4 @@
-# AgentCore Publish
+# AgentCore for Dev
 
 Repositorio reorganizado para convertir el enfoque original de AgentCore en un sistema más **agnóstico, ordenado, guiado y portable**, manteniendo a **gentle-ai** como orquestador y usando `/ai` como capa principal de gobierno y trabajo.
 
@@ -103,6 +103,29 @@ Su innovación está en separar responsabilidades con más claridad:
 
 - `ai/templates/PROJECT-BRIEF-FULL.yaml` — para cambios grandes, complejos o sensibles.
 - `ai/templates/PROJECT-BRIEF-LITE.yaml` — para proyectos pequeños, rápidos o exploratorios.
+
+## Ejemplos de uso
+
+### 1. Proyecto grande desde cero
+- Usa `PROJECT-BRIEF-FULL.yaml` como gate.
+- Flujo: `brief-inception` → `brief-to-prd` → `prd-to-spec` → `spec-to-tasks`.
+- Si hay riesgos: registra ADR y valida en **decision gates**.
+
+### 2. Proyecto ligero o pequeño
+- Usa `PROJECT-BRIEF-LITE.yaml`.
+- Flujo corto: `brief-inception` → `brief-to-prd` → `spec-to-tasks` (si aplica).
+
+### 3. Proyecto ya en marcha
+- Entra por `change-review` para acotar impacto.
+- Si hay reglas existentes: `rule-migration-plan` antes de tocar producción.
+
+### 4. Crear una issue
+- Parte de un brief mínimo y define: objetivo, alcance, validación.
+- Luego deriva a `spec-to-tasks` para desglose ejecutable.
+
+### 5. Revisar una parte del ciclo de desarrollo
+- Usa **decision gates** para evaluar estado y bloqueos.
+- Si hay fricción recurrente: `improvement-loop` y `local-retrospective`.
 
 ## Estructura del repo
 
