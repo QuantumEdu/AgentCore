@@ -6,15 +6,18 @@ This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable
 
 ## Read Order
 
-1. `/ai/governance/00-start-here.md`
-2. `/ai/governance/02-decision-gates.md`
-3. `/ai/context/system-layers.md`
-4. Only then consult `/legacy` if historical reference is genuinely needed.
+1. `/ai/README.md`
+2. `/ai/governance/00-start-here.md`
+3. `/ai/governance/04-workflow-map.md`
+4. `/ai/governance/05-quick-start-by-scenario.md`
+5. `/ai/context/system-layers.md`
+6. Only then consult `/legacy` if historical reference is genuinely needed.
 
 ## Operating Model
 
 - **gentle-ai**: orchestration, memory, SDD, delegation.
 - **/ai/governance**: intake, decision gates, project brief guidance.
+- **/ai/README.md**: onboarding and system overview.
 - **/ai/skills**: portable reusable behaviors.
 - **/ai/agents**: optional specialized agents for discovery/inception.
 - **/legacy**: archivo histórico mínimo rescatado desde AgentCore.
@@ -24,8 +27,14 @@ This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable
 - Do not modify gentle-ai core behavior from this repository.
 - Prefer `/ai/*` over reviving legacy assets.
 - Treat the project brief as the entry gate before architecture or implementation.
+- Use `PROJECT-BRIEF-LITE` for small/exploratory work and `PROJECT-BRIEF-FULL` for serious, sensitive, or complex work.
 - Ask up to 7 critical questions first when the brief is incomplete.
 - When unsure whether something is still used, archive to `legacy/` instead of deleting.
+
+## Routing Rule
+
+- If you need the structural view by change type, use `/ai/governance/04-workflow-map.md`.
+- If you need the practical “what do I use now?” view, use `/ai/governance/05-quick-start-by-scenario.md`.
 
 ## Prompting Standard
 
