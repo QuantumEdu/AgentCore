@@ -4,7 +4,7 @@ Repositorio reorganizado para convertir el enfoque original de AgentCore en un s
 
 ## Qué es este repo ahora
 
-Este repo ya no está centrado en `.claude/` como sistema activo.
+Este repo ya no está centrado en `.claude/` como sistema activo; esas carpetas fueron retiradas.
 
 Ahora el corazón del proyecto vive en `/ai` y se enfoca en:
 
@@ -31,7 +31,6 @@ Este sistema busca resolver eso con una capa `/ai` que ordena el trabajo sin com
 
 - **gentle-ai** = orquestación, memoria persistente, delegación, SDD.
 - **/ai** = guía, flujo, skills, agentes simples, templates y fallback local.
-- **/legacy** = archivo histórico, no sistema activo.
 
 ## Flujo lógico recomendado
 
@@ -117,8 +116,6 @@ Su innovación está en separar responsabilidades con más claridad:
   /skills        # capacidades operativas
   /templates     # formatos de salida y briefs
 
-/legacy          # archivo histórico
-
 AGENTS.md        # entry point operativo del repo
 README.md        # onboarding público del sistema
 ```
@@ -140,22 +137,15 @@ README.md        # onboarding público del sistema
 ## Estado actual
 
 - `/ai` es la capa activa principal.
-- `.claude/` y `.agent/` quedaron como stubs mínimos.
-- `legacy/` conserva el sistema anterior y material histórico.
-- `READMEv2.md` y el legado de AgentCore quedaron archivados.
+- `READMEv2.md` y el legado de AgentCore quedaron archivados fuera del repo.
 
 ## Nota sobre el legado
 
-El sistema anterior no se eliminó de forma destructiva.
-Se movió a `legacy/` para conservar:
-
-- referencia histórica;
-- comparación viejo vs nuevo;
-- recuperación si alguna pieza debe rescatarse.
+El sistema anterior se mantiene como respaldo externo.
 
 ## Regla operativa
 
 1. Para iniciar un proyecto o cambio grande, leer `AGENTS.md`.
 2. Luego leer `ai/governance/00-start-here.md`.
 3. Usar el brief como gate de entrada antes de PRD/spec/tareas.
-4. Tratar `legacy/` como archivo histórico, no como flujo activo.
+4. Tratar el respaldo histórico como referencia, no como flujo activo.

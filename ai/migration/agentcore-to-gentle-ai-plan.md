@@ -28,7 +28,7 @@ Reducir AgentCore a convenciones exportables y dejar a gentle-ai como orquestado
 
 ## Criterio de limpieza
 
-Mover a `legacy/` solo lo claramente:
+Mover a respaldo externo solo lo claramente:
 
 - experimental
 - duplicado
@@ -38,4 +38,4 @@ Mover a `legacy/` solo lo claramente:
 ## Resultado de fase 2
 
 La fuente activa ahora es `/ai`.
-`/legacy` guarda únicamente material histórico o demasiado acoplado para seguir en el flujo principal.
+El respaldo externo guarda únicamente material histórico o demasiado acoplado para seguir en el flujo principal.

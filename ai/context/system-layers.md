@@ -27,10 +27,7 @@
 - `/ai/agents`
 - agentes solo cuando la tarea requiere entrevista, priorización o juicio continuo
 
-### 5. Archivo histórico
-- `/legacy`
-
 ## Decisión principal
 
 AgentCore ya no debe ser el cerebro principal.
-Debe quedar solo como **fuente rescatada de mejores prácticas**, con el resto archivado en `legacy/`.
+Debe quedar solo como **fuente rescatada de mejores prácticas**, con el resto archivado en respaldo externo.
