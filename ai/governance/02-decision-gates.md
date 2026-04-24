@@ -38,7 +38,7 @@ Antes de cerrar un cambio validar:
 - pruebas o validación acordada
 - impacto en documentación
 - decisiones nuevas registradas
-- archivos obsoletos archivados en `legacy/` si aplica
+- archivos obsoletos archivados en respaldo externo si aplica
 
 ## Gate 5 · Archivo
 

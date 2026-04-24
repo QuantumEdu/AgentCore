@@ -1,6 +1,6 @@
 # FAQ - AgentCore
 
-Preguntas frecuentes sobre instalación, migración y uso de AgentCore.
+**Nota:** este FAQ es histórico. La estructura `.agent/` y `.claude/` ya no existe en este repo; el flujo activo vive en `/ai`. Las instrucciones abajo se conservan solo como referencia del sistema anterior.
 
 ---
 

@@ -1,5 +1,7 @@
 # Changelog
 
+**Note:** Historical log for the previous AgentCore layout. The `.agent/` and `.claude/` folders have been removed from this repo; the active system now lives in `/ai`.
+
 All notable changes to AgentCore will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

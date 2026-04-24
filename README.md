@@ -1,10 +1,10 @@
-# AgentCore Publish
+# AgentCore for Dev
 
 Repositorio reorganizado para convertir el enfoque original de AgentCore en un sistema más **agnóstico, ordenado, guiado y portable**, manteniendo a **gentle-ai** como orquestador y usando `/ai` como capa principal de gobierno y trabajo.
 
 ## Qué es este repo ahora
 
-Este repo ya no está centrado en `.claude/` como sistema activo.
+Este repo ya no está centrado en `.claude/` como sistema activo; esas carpetas fueron retiradas.
 
 Ahora el corazón del proyecto vive en `/ai` y se enfoca en:
 
@@ -31,7 +31,6 @@ Este sistema busca resolver eso con una capa `/ai` que ordena el trabajo sin com
 
 - **gentle-ai** = orquestación, memoria persistente, delegación, SDD.
 - **/ai** = guía, flujo, skills, agentes simples, templates y fallback local.
-- **/legacy** = archivo histórico, no sistema activo.
 
 ## Flujo lógico recomendado
 
@@ -105,6 +104,29 @@ Su innovación está en separar responsabilidades con más claridad:
 - `ai/templates/PROJECT-BRIEF-FULL.yaml` — para cambios grandes, complejos o sensibles.
 - `ai/templates/PROJECT-BRIEF-LITE.yaml` — para proyectos pequeños, rápidos o exploratorios.
 
+## Ejemplos de uso
+
+### 1. Proyecto grande desde cero
+- Usa `PROJECT-BRIEF-FULL.yaml` como gate.
+- Flujo: `brief-inception` → `brief-to-prd` → `prd-to-spec` → `spec-to-tasks`.
+- Si hay riesgos: registra ADR y valida en **decision gates**.
+
+### 2. Proyecto ligero o pequeño
+- Usa `PROJECT-BRIEF-LITE.yaml`.
+- Flujo corto: `brief-inception` → `brief-to-prd` → `spec-to-tasks` (si aplica).
+
+### 3. Proyecto ya en marcha
+- Entra por `change-review` para acotar impacto.
+- Si hay reglas existentes: `rule-migration-plan` antes de tocar producción.
+
+### 4. Crear una issue
+- Parte de un brief mínimo y define: objetivo, alcance, validación.
+- Luego deriva a `spec-to-tasks` para desglose ejecutable.
+
+### 5. Revisar una parte del ciclo de desarrollo
+- Usa **decision gates** para evaluar estado y bloqueos.
+- Si hay fricción recurrente: `improvement-loop` y `local-retrospective`.
+
 ## Estructura del repo
 
 ```text
@@ -116,8 +138,6 @@ Su innovación está en separar responsabilidades con más claridad:
   /schemas       # validación estructural mínima
   /skills        # capacidades operativas
   /templates     # formatos de salida y briefs
-
-/legacy          # archivo histórico
 
 AGENTS.md        # entry point operativo del repo
 README.md        # onboarding público del sistema
@@ -140,22 +160,15 @@ README.md        # onboarding público del sistema
 ## Estado actual
 
 - `/ai` es la capa activa principal.
-- `.claude/` y `.agent/` quedaron como stubs mínimos.
-- `legacy/` conserva el sistema anterior y material histórico.
-- `READMEv2.md` y el legado de AgentCore quedaron archivados.
+- `READMEv2.md` y el legado de AgentCore quedaron archivados fuera del repo.
 
 ## Nota sobre el legado
 
-El sistema anterior no se eliminó de forma destructiva.
-Se movió a `legacy/` para conservar:
-
-- referencia histórica;
-- comparación viejo vs nuevo;
-- recuperación si alguna pieza debe rescatarse.
+El sistema anterior se mantiene como respaldo externo.
 
 ## Regla operativa
 
 1. Para iniciar un proyecto o cambio grande, leer `AGENTS.md`.
 2. Luego leer `ai/governance/00-start-here.md`.
 3. Usar el brief como gate de entrada antes de PRD/spec/tareas.
-4. Tratar `legacy/` como archivo histórico, no como flujo activo.
+4. Tratar el respaldo histórico como referencia, no como flujo activo.
