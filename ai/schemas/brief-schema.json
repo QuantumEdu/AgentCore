@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PROJECT-BRIEF-FULL v2 Minimal Schema",
+  "description": "Validación estructural mínima para /ai/templates/PROJECT-BRIEF-FULL.yaml. Este schema valida solo la base estable del brief v2.0; la validación profunda y contextual la hacen las skills de /ai.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "metadata",
+    "tipo_entrega",
+    "stack_principal",
+    "criticalidad",
+    "team_size",
+    "timeframe",
+    "negocio",
+    "arquitectura",
+    "estrategia_datos"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["nombre"],
+      "additionalProperties": true,
+      "properties": {
+        "nombre": { "type": "string", "minLength": 1 },
+        "codigo_proyecto": { "type": "string" },
+        "version_brief": { "type": "string" },
+        "fecha": { "type": "string" },
+        "autor": { "type": "string" },
+        "repositorio": { "type": "string" }
+      }
+    },
+    "tipo_entrega": {
+      "type": "string",
+      "enum": ["web_saas", "app_desktop", "hibrido", "api_backend", "cli_tool", "agente_ai"]
+    },
+    "stack_principal": {
+      "type": "string",
+      "enum": ["nextjs15", "go_wails", "fastapi_ssr", "fastapi_spa", "fastapi_desktop", "electron_react", "otro"]
+    },
+    "criticalidad": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "team_size": {
+      "type": "string",
+      "enum": ["1", "2-5", "6-15", "15+"]
+    },
+    "timeframe": {
+      "type": "string",
+      "enum": ["mvp-2sem", "short-1mes", "medium-3mes", "long-6mes+"]
+    },
+    "negocio": {
+      "type": "object",
+      "required": ["problema", "solucion_propuesta", "estado_actual", "modelo_negocio"],
+      "additionalProperties": true,
+      "properties": {
+        "problema": { "type": "string" },
+        "solucion_propuesta": { "type": "string" },
+        "estado_actual": { "type": "string", "enum": ["greenfield", "brownfield", "migracion", "prototipo"] },
+        "modelo_negocio": { "type": "string" }
+      }
+    },
+    "arquitectura": {
+      "type": "object",
+      "required": ["patron", "bounded_contexts", "tipo_ejecucion"],
+      "additionalProperties": true,
+      "properties": {
+        "patron": {
+          "type": "string",
+          "enum": ["hexagonal_ligera", "clean_architecture", "capas_fastapi", "mvc_simple", "otro"]
+        },
+        "bounded_contexts": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "tipo_ejecucion": {
+          "type": "string",
+          "enum": ["sync", "async", "event_driven", "hybrid", "streaming"]
+        }
+      }
+    },
+    "estrategia_datos": {
+      "type": "object",
+      "required": ["db_dev", "db_prod", "orm", "ids"],
+      "additionalProperties": true,
+      "properties": {
+        "db_dev": { "type": "string" },
+        "db_prod": { "type": "string" },
+        "orm": { "type": "string", "enum": ["prisma", "gorm", "sqlalchemy", "mongoose"] },
+        "ids": { "type": "string", "enum": ["cuid", "uuid", "autoincrement", "ulid"] }
+      }
+    }
+  }
+}

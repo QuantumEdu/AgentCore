@@ -1,0 +1,74 @@
+# =============================================================================
+# PROJECT-BRIEF-LITE.yaml
+# =============================================================================
+# Versión reducida del brief para proyectos pequeños, rápidos o exploratorios.
+# Úsalo cuando NO necesitas las 35 secciones del brief completo.
+#
+# Casos ideales:
+# - MVP pequeño
+# - herramienta CLI
+# - API interna simple
+# - experimento o prototipo rápido
+# =============================================================================
+
+metadata:
+  nombre: ""
+  codigo_proyecto: ""
+  fecha: ""
+  autor: ""
+  repositorio: ""
+
+tipo_entrega: ""
+# web_saas | app_desktop | hibrido | api_backend | cli_tool | agente_ai
+
+stack_principal: ""
+# nextjs15 | go_wails | fastapi_ssr | fastapi_spa | fastapi_desktop | electron_react | otro
+
+criticalidad: ""
+# low | medium | high | critical
+
+team_size: ""
+# 1 | 2-5 | 6-15 | 15+
+
+timeframe: ""
+# mvp-2sem | short-1mes | medium-3mes | long-6mes+
+
+negocio:
+  problema: ""
+  solucion_propuesta: ""
+  estado_actual: ""
+  # greenfield | brownfield | migracion | prototipo
+  modelo_negocio: ""
+  fuera_de_alcance: []
+
+stakeholders:
+  usuarios_primarios:
+    - persona: ""
+      perfil: ""
+      job_to_be_done: ""
+
+arquitectura:
+  patron: ""
+  # hexagonal_ligera | clean_architecture | capas_fastapi | mvc_simple | otro
+  bounded_contexts:
+    custom:
+      - nombre: ""
+        descripcion: ""
+  tipo_ejecucion: ""
+  # sync | async | event_driven | hybrid | streaming
+
+estrategia_datos:
+  db_dev: ""
+  db_prod: ""
+  orm: ""
+  ids: ""
+
+restricciones:
+  tecnicas: []
+  negocio: []
+  operativas: []
+
+entrega:
+  criterio_exito: []
+  riesgos_principales: []
+  siguiente_paso_recomendado: ""
