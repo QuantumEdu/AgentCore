@@ -1,5 +1,7 @@
 # Notes
 
+> Nota interna de trabajo. No es la fuente principal de onboarding; para eso usar `README.md` y `/ai/governance/*`.
+
 ## Orden recomendado como flujo lógico
 
 ### 1. governance

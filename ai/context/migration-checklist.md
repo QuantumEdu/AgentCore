@@ -33,4 +33,4 @@
 ## Migration Rule
 
 Promover a `/ai` solo lo que ayude a un flujo más portable, claro y profesional.
-Todo lo acoplado a un proyecto ejemplo, stack rígido o runtime legacy debe ir a respaldo externo o descartarse.
+Todo lo acoplado a un proyecto ejemplo, stack rígido o runtime legacy debe ir a `/legacy` o descartarse si no aporta valor histórico real.

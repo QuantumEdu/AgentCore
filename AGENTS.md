@@ -11,7 +11,7 @@ This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable
 3. `/ai/governance/04-workflow-map.md`
 4. `/ai/governance/05-quick-start-by-scenario.md`
 5. `/ai/context/system-layers.md`
-6. Only then consult the external backup if historical reference is genuinely needed.
+6. Only then consult `/legacy` if historical reference is genuinely needed.
 
 ## Operating Model
 
@@ -20,7 +20,7 @@ This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable
 - **/ai/README.md**: onboarding and system overview.
 - **/ai/skills**: portable reusable behaviors.
 - **/ai/agents**: optional specialized agents for discovery/inception.
-- **backup externo**: archivo histórico mínimo rescatado desde AgentCore.
+- **/legacy**: archivo histórico mínimo rescatado desde AgentCore.
 
 ## Non-Negotiables
 
@@ -29,7 +29,7 @@ This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable
 - Treat the project brief as the entry gate before architecture or implementation.
 - Use `PROJECT-BRIEF-LITE` for small/exploratory work and `PROJECT-BRIEF-FULL` for serious, sensitive, or complex work.
 - Ask up to 7 critical questions first when the brief is incomplete.
-- When unsure whether something is still used, archive to external backup instead of deleting.
+- When unsure whether something is still used, archive to `/legacy` instead of deleting.
 
 ## Routing Rule
 

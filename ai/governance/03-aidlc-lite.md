@@ -13,7 +13,7 @@ Funciona como **capa de gobierno liviana** encima del orquestador.
 | /ai/governance | Intake, preguntas, gates, brief y decisiones iniciales |
 | /ai/skills | Capacidades portables y reusables |
 | /ai/agents | Especialistas opcionales por rol |
-| .claude | Compatibilidad heredada y materiales legacy de AgentCore |
+| /legacy | Archivo histórico y material rescatado del sistema anterior |
 
 ## Fases
 
@@ -30,3 +30,8 @@ En este diseño:
 - gentle-ai decide la orquestación;
 - AI-DLC-lite decide las puertas de paso;
 - Engram recuerda.
+
+## Nota de transición
+
+En este repo, `.claude/` y `.agent/` ya no son fuentes activas de verdad.
+Quedaron solo como stubs mínimos de compatibilidad, mientras que el archivo histórico real vive en `/legacy`.
