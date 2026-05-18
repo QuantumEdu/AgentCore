@@ -10,3 +10,10 @@ Thumbs.db
 *.tmp
 *.log
 .ruff_cache/
+
+# Local AI tooling / runtime artifacts
+.atl/
+.pi/
+
+# Local working notes not intended for main repo flow
+agentcore-y-sdd.md
