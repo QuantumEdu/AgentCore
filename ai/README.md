@@ -4,11 +4,13 @@ Capas portables de guía, memoria fallback, skills, agentes simples y templates 
 
 ## Strategic role
 
-`/ai` es la capa local que completa lo que quedó inconcluso en la transición:
+`/ai` es la capa portable que este paquete instala dentro de otro proyecto para sumar governance, flujo y soporte operativo sin tocar el núcleo de `gentle-ai`.
 
-- `sdd-govplan` cubrió la parte inicial de governance;
-- `agent-core-v3` cubrió la parte global/distribuible;
-- `/ai` cubre el flujo local completo y contextual del proyecto.
+Contexto histórico:
+
+- `sdd-govplan` cubrió parte de la capa inicial de governance;
+- `agent-core-v3` era el destino pensado para la distribución reusable;
+- este paquete usa directamente `/ai` como overlay instalable.
 
 ## Start here
 
@@ -51,13 +53,13 @@ Luego, según el caso:
 ## Notes
 
 - `gentle-ai` sigue siendo el orquestador.
-- `sdd-govplan` debe evolucionar como repo maestro de esta capa de gobernanza.
-- `agent-core-v3` representa la capa reusable global.
 - `/ai` no reemplaza la orquestación; aporta gobierno, estructura y continuidad.
+- Las menciones a `sdd-govplan` y `agent-core-v3` en esta carpeta son contexto de migración, no prerequisitos para usar el paquete.
 
-## Publishing direction
+## Installed through the CLI
 
-Desde este directorio deben salir dos cosas distintas:
+Después de correr `npx agentcore-overlay init` o `agentcore-overlay init`, abrí en este orden:
 
-1. **hacia `sdd-govplan`** → la versión maestra e integral del sistema de gobernanza;
-2. **hacia `agent-core-v3`** → solo el core reusable/installable.
+1. `governance/00-start-here.md`
+2. `governance/04-workflow-map.md`
+3. `governance/05-quick-start-by-scenario.md`

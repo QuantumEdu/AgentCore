@@ -1,239 +1,168 @@
-# AgentCore for Dev
+# AgentCore Overlay
 
-Repositorio reorganizado para convertir el enfoque original de AgentCore en un sistema más **agnóstico, ordenado, guiado y portable**, manteniendo a **gentle-ai** como orquestador y usando `/ai` como capa principal de gobierno y trabajo.
+Overlay reusable para trabajar con `gentle-ai` usando `/ai` como capa portable de gobierno, flujo y soporte operativo.
 
-## Estado estratégico de este repo
+Este repo ahora se puede usar directamente como paquete Node para instalarlo con `npx` o `npm install -g`, y su objetivo principal es **copiar la capa reusable** dentro de otro proyecto sin tocar el core de `gentle-ai`.
 
-Este directorio funciona ahora como:
+## 1. Qué es este repo
 
-1. **fuente local de cierre** de lo que quedó inconcluso entre AgentCore, `sdd-govplan` y `agent-core-v3`;
-2. **overlay operativo** para trabajar con `gentle-ai` en proyectos reales;
-3. **fuente maestra** para actualizar `sdd-govplan` con una versión más integral del sistema;
-4. **fuente de exportación** de las piezas reutilizables que luego deben publicarse en `agent-core-v3`.
+Este repositorio publica una capa de trabajo reusable con:
 
-## Qué es este repo ahora
+- `/ai` para governance, workflow, skills, agents, templates y fallback local;
+- `AGENTS.md` como entrypoint operativo del proyecto;
+- documentación pública para entender cómo adoptarlo.
 
-Este repo ya no está centrado en `.claude/` como sistema activo; esas carpetas fueron retiradas.
+No intenta reemplazar a `gentle-ai`.
 
-Ahora el corazón del proyecto vive en `/ai` y se enfoca en:
+- `gentle-ai` orquesta;
+- este repo aporta la capa portable de guía y estructura.
 
-- gobierno liviano;
-- flujo estructurado de discovery a ejecución;
-- skills composables;
-- agentes simples por rol;
-- memoria fallback cuando no hay Engram;
-- migración segura de reglas en sistemas en operación.
+## 2. Por qué siguen apareciendo menciones a `agent-core-v3`
 
-## Qué problema resuelve
+Vas a ver referencias viejas a `agent-core-v3` porque este repo nació como parte de una transición mayor.
 
-Cuando solo hay prompts sueltos o reglas dispersas, el agente suele:
+En concreto:
 
-- empezar sin suficiente contexto;
-- mezclar descubrimiento, diseño y ejecución;
-- repetir errores;
-- perder continuidad entre sesiones;
-- tomar decisiones técnicas sin una guía clara.
+1. `sdd-govplan` capturó parte de la capa de governance;
+2. `agent-core-v3` era el destino pensado para la distribución global/npm del core reusable;
+3. este repo consolidó el overlay `/ai` que faltaba ordenar y publicar.
 
-Este sistema busca resolver eso con una capa `/ai` que ordena el trabajo sin competir con gentle-ai.
+La idea importante HOY no es `agent-core-v3` como mensaje principal.
+La idea importante es esta: **este repo ya sirve por sí mismo como fuente instalable del overlay reusable**.
 
-## Principio central
+## 3. Instalación
 
-- **gentle-ai** = orquestación, memoria persistente, delegación, SDD.
-- **sdd-govplan** = repositorio maestro de esta capa de gobernanza cuando se publique la versión consolidada.
-- **agent-core-v3** = distribución global/npm del core reusable.
-- **/ai** = guía, flujo, skills, agentes simples, templates y fallback local.
+### Con `npx`
 
-## Qué quedó inconcluso antes
-
-### `sdd-govplan`
-Capturó principalmente la parte inicial del proceso:
-- governance;
-- intake;
-- brief;
-- pre-SDD.
-
-### `agent-core-v3`
-Resolvió la parte de distribución global:
-- instalación por npm;
-- portabilidad multi-tool;
-- skills globales base.
-
-### Pero faltaba absorber
-- el puente `brief → PRD → spec → tasks`;
-- los templates ricos del proyecto;
-- la navegación local (`README`, workflow map, quick-start);
-- los agentes simples de rol;
-- la capa de overlay contextual del repo.
-
-Este repo retoma justamente esa parte faltante.
-
-## Flujo lógico recomendado
-
-### Flujo de uso
-1. **governance**
-2. **quick-start**
-3. **workflow map**
-4. **schema mínimo**
-5. **templates**
-6. **skills**
-7. **agents**
-8. **context**
-9. **memory fallback**
-10. **migration planning**
-
-### Flujo canónico de trabajo
-
-`brief-inception` → `brief-to-prd` → `prd-to-spec` → `spec-to-tasks`
-
-Luego, según el caso:
-
-- review → `change-review`
-- migration → `rule-migration-plan`
-- repeated errors → `improvement-loop`
-- no Engram → `project-memory-fallback`
-
-## Casos básicos que cubre
-
-### 1. Arrancar un proyecto desde cero
-- `brief-inception`
-- `project-stack-decider`
-- `brief-to-prd`
-- `prd-to-spec`
-- `spec-to-tasks`
-
-### 2. Idea difusa
-- `brief-inception`
-- `brief-to-prd`
-- `project-stack-decider` si falta dirección técnica
-
-### 3. Endpoint nuevo
-- `add-endpoint`
-- `change-review`
-
-### 4. Reemplazar una regla en producción sin romper
-- `rule-migration-plan`
-- `change-review`
-- `local-retrospective`
-
-### 5. Error repetido o fricción recurrente
-- `improvement-loop`
-- `local-retrospective`
-
-### 6. No hay Engram
-- `project-memory-fallback`
-
-## Innovación / qué lo hace distinto
-
-Este repo no intenta ser otro orquestador.
-Su innovación está en separar responsabilidades con más claridad:
-
-- gobierno liviano sin invadir la ejecución;
-- skills pequeñas y composables en lugar de workflows rígidos gigantes;
-- agentes simples como wrappers de rol, no “megaagentes”;
-- memoria fallback local cuando Engram no está disponible;
-- migración de reglas con shadow mode, rollout gradual y rollback claro;
-- brief full y brief lite según complejidad del proyecto.
-
-## Relación entre repositorios
-
-### `gentle-ai`
-Sigue siendo el runtime/orquestador.
-
-### `sdd-govplan`
-Debe evolucionar a repo maestro de esta capa de gobierno y flujo, absorbiendo la versión consolidada de este trabajo.
-
-### `agent-core-v3`
-Debe recibir desde aquí únicamente las piezas **reutilizables y distribuibles**:
-- skills globales;
-- templates base;
-- assets de soporte;
-- documentación de instalación/global usage.
-
-### Este repo (`agentcore_publish`)
-Sirve como:
-- laboratorio de consolidación;
-- fuente local de prueba;
-- base para decidir qué exportar a `agent-core-v3`;
-- base para rehacer `sdd-govplan` como archivo maestro.
-
-## Briefs disponibles
-
-- `ai/templates/PROJECT-BRIEF-FULL.yaml` — para cambios grandes, complejos o sensibles.
-- `ai/templates/PROJECT-BRIEF-LITE.yaml` — para proyectos pequeños, rápidos o exploratorios.
-
-## Ejemplos de uso
-
-### 1. Proyecto grande desde cero
-- Usa `PROJECT-BRIEF-FULL.yaml` como gate.
-- Flujo: `brief-inception` → `brief-to-prd` → `prd-to-spec` → `spec-to-tasks`.
-- Si hay riesgos: registra ADR y valida en **decision gates**.
-
-### 2. Proyecto ligero o pequeño
-- Usa `PROJECT-BRIEF-LITE.yaml`.
-- Flujo corto: `brief-inception` → `brief-to-prd` → `spec-to-tasks` (si aplica).
-
-### 3. Proyecto ya en marcha
-- Entra por `change-review` para acotar impacto.
-- Si hay reglas existentes: `rule-migration-plan` antes de tocar producción.
-
-### 4. Crear una issue
-- Parte de un brief mínimo y define: objetivo, alcance, validación.
-- Luego deriva a `spec-to-tasks` para desglose ejecutable.
-
-### 5. Revisar una parte del ciclo de desarrollo
-- Usa **decision gates** para evaluar estado y bloqueos.
-- Si hay fricción recurrente: `improvement-loop` y `local-retrospective`.
-
-## Estructura del repo
-
-```text
-/ai
-  /agents        # agentes simples por rol
-  /context       # contexto estable + memoria fallback local
-  /governance    # gates, workflow map, quick start
-  /migration     # notas y estrategia de transición
-  /schemas       # validación estructural mínima
-  /skills        # capacidades operativas
-  /templates     # formatos de salida y briefs
-
-AGENTS.md        # entry point operativo del repo
-README.md        # onboarding público del sistema
+```bash
+npx agentcore-overlay init
 ```
 
-## Cómo empezar
+### Instalación global
 
-### Inicio rápido
-1. Leer `AGENTS.md`
-2. Leer `ai/README.md`
-3. Leer `ai/governance/00-start-here.md`
-4. Elegir entre:
-   - `ai/governance/04-workflow-map.md`
-   - `ai/governance/05-quick-start-by-scenario.md`
+```bash
+npm install -g agentcore-overlay
+agentcore-overlay init
+```
 
-### Si vienes desde GitHub y quieres entender el sistema rápido
-- visión estructural → `ai/governance/04-workflow-map.md`
-- guía por situaciones reales → `ai/governance/05-quick-start-by-scenario.md`
+### Instalar en un directorio específico
 
-## Estado actual
+```bash
+npx agentcore-overlay init my-project
+```
 
-- `/ai` es la capa activa principal.
-- `READMEv2.md` y el legado de AgentCore quedaron archivados fuera del repo.
+### Sobrescribir archivos existentes
 
-## Nota sobre el legado
+Por defecto, el scaffold **no sobreescribe** archivos existentes.
 
-El sistema anterior se mantiene como respaldo externo.
+```bash
+npx agentcore-overlay init my-project --force
+```
 
-## Regla operativa
+## 4. Qué copia el comando
 
-1. Para iniciar un proyecto o cambio grande, leer `AGENTS.md`.
-2. Luego leer `ai/governance/00-start-here.md`.
-3. Usar el brief como gate de entrada antes de PRD/spec/tareas.
-4. Tratar el respaldo histórico como referencia, no como flujo activo.
+El CLI copia solamente lo mínimo reusable para incrustar el sistema en otro proyecto:
 
-## Siguiente objetivo natural
+1. `ai/`
+2. `AGENTS.md`
 
-La siguiente evolución profesional es:
+No copia `README.md`, `FAQ.md` ni `CHANGELOG.md` al proyecto destino porque son documentación del repositorio fuente, no parte obligatoria del overlay operativo.
 
-1. consolidar esta capa como base maestra en `sdd-govplan`;
-2. exportar desde aquí el core reusable a `agent-core-v3`;
-3. mantener `/ai` como overlay local para proyectos reales.
+## 5. Uso rápido
+
+### Ejemplo A: inicializar en el directorio actual
+
+```bash
+npx agentcore-overlay init
+```
+
+Resultado esperado:
+
+- aparece `./ai`
+- aparece `./AGENTS.md`
+
+### Ejemplo B: inicializar en un proyecto nuevo
+
+```bash
+npx agentcore-overlay init apps/customer-portal
+```
+
+Resultado esperado:
+
+- `apps/customer-portal/ai`
+- `apps/customer-portal/AGENTS.md`
+
+### Ejemplo C: ver qué haría sin escribir archivos
+
+```bash
+npx agentcore-overlay init sandbox --dry-run
+```
+
+### Ejemplo D: actualizar un overlay existente
+
+```bash
+agentcore-overlay init . --force
+```
+
+Esto sobrescribe archivos coincidentes del overlay. No elimina archivos viejos que hayan quedado fuera de versiones anteriores.
+
+## 6. Qué hacer después de `init`
+
+Seguí este orden:
+
+1. leer `AGENTS.md`
+2. leer `ai/README.md`
+3. leer `ai/governance/00-start-here.md`
+4. usar `ai/governance/04-workflow-map.md` si necesitás vista estructural
+5. usar `ai/governance/05-quick-start-by-scenario.md` si necesitás entrada por caso real
+
+## 7. Estructura
+
+1. `ai/agents` - agentes simples por rol
+2. `ai/context` - contexto estable y memoria fallback local
+3. `ai/governance` - gates, quick-start y workflow map
+4. `ai/migration` - material de transición y consolidación histórica
+5. `ai/schemas` - validación estructural mínima
+6. `ai/skills` - capacidades operativas reutilizables
+7. `ai/templates` - briefs, ADRs, roadmaps y otros formatos
+8. `AGENTS.md` - entrypoint operativo del overlay dentro del proyecto
+
+## 8. Casos de uso concretos
+
+### Proyecto nuevo con discovery antes de implementar
+
+1. iniciar con `agentcore-overlay init`
+2. abrir `AGENTS.md`
+3. usar `PROJECT-BRIEF-LITE` o `PROJECT-BRIEF-FULL`
+4. avanzar por el flujo `brief-inception -> brief-to-prd -> prd-to-spec -> spec-to-tasks`
+
+### Proyecto ya en marcha con cambio sensible
+
+1. inicializar el overlay en el repo
+2. entrar por `change-review`
+3. si hay reemplazo de reglas o configuración, usar `rule-migration-plan`
+
+### Proyecto sin Engram disponible
+
+1. inicializar el overlay
+2. usar `project-memory-fallback`
+3. guardar decisiones y contexto en `ai/context`
+
+## 9. Límites del paquete
+
+Este paquete NO instala ni modifica `gentle-ai`.
+
+Solo scaffolda la capa reusable que este repo mantiene en `/ai` y `AGENTS.md`.
+
+## 10. Desarrollo local de este repo
+
+Para probar el CLI desde este repositorio:
+
+```bash
+node bin/agentcore-overlay.js --help
+node bin/agentcore-overlay.js init . --force --dry-run
+```
+
+## 11. Licencia
+
+Este proyecto se distribuye bajo licencia `MIT`.

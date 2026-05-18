@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable guidance layer.
+This repository packages `/ai` plus `AGENTS.md` as a portable overlay for projects that use **gentle-ai as the orchestrator**.
 
 ## Read Order
 
@@ -16,8 +16,9 @@ This repository uses **gentle-ai as the orchestrator** and `/ai` as the portable
 ## Operating Model
 
 - **gentle-ai**: orchestration, memory, SDD, delegation.
-- **sdd-govplan**: master source of the governance layer being consolidated from this work.
-- **agent-core-v3**: global/installable distribution target for reusable skills and assets.
+- **this package**: installable overlay that copies `/ai` and `AGENTS.md` into a target project.
+- **sdd-govplan**: historical/master governance lineage referenced by some migration docs.
+- **agent-core-v3**: historical distribution target still mentioned in transition notes.
 - **/ai/governance**: intake, decision gates, project brief guidance.
 - **/ai/README.md**: onboarding and system overview.
 - **/ai/skills**: portable reusable behaviors.
