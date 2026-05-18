@@ -2,6 +2,15 @@
 
 Repositorio reorganizado para convertir el enfoque original de AgentCore en un sistema más **agnóstico, ordenado, guiado y portable**, manteniendo a **gentle-ai** como orquestador y usando `/ai` como capa principal de gobierno y trabajo.
 
+## Estado estratégico de este repo
+
+Este directorio funciona ahora como:
+
+1. **fuente local de cierre** de lo que quedó inconcluso entre AgentCore, `sdd-govplan` y `agent-core-v3`;
+2. **overlay operativo** para trabajar con `gentle-ai` en proyectos reales;
+3. **fuente maestra** para actualizar `sdd-govplan` con una versión más integral del sistema;
+4. **fuente de exportación** de las piezas reutilizables que luego deben publicarse en `agent-core-v3`.
+
 ## Qué es este repo ahora
 
 Este repo ya no está centrado en `.claude/` como sistema activo; esas carpetas fueron retiradas.
@@ -30,7 +39,33 @@ Este sistema busca resolver eso con una capa `/ai` que ordena el trabajo sin com
 ## Principio central
 
 - **gentle-ai** = orquestación, memoria persistente, delegación, SDD.
+- **sdd-govplan** = repositorio maestro de esta capa de gobernanza cuando se publique la versión consolidada.
+- **agent-core-v3** = distribución global/npm del core reusable.
 - **/ai** = guía, flujo, skills, agentes simples, templates y fallback local.
+
+## Qué quedó inconcluso antes
+
+### `sdd-govplan`
+Capturó principalmente la parte inicial del proceso:
+- governance;
+- intake;
+- brief;
+- pre-SDD.
+
+### `agent-core-v3`
+Resolvió la parte de distribución global:
+- instalación por npm;
+- portabilidad multi-tool;
+- skills globales base.
+
+### Pero faltaba absorber
+- el puente `brief → PRD → spec → tasks`;
+- los templates ricos del proyecto;
+- la navegación local (`README`, workflow map, quick-start);
+- los agentes simples de rol;
+- la capa de overlay contextual del repo.
+
+Este repo retoma justamente esa parte faltante.
 
 ## Flujo lógico recomendado
 
@@ -98,6 +133,28 @@ Su innovación está en separar responsabilidades con más claridad:
 - memoria fallback local cuando Engram no está disponible;
 - migración de reglas con shadow mode, rollout gradual y rollback claro;
 - brief full y brief lite según complejidad del proyecto.
+
+## Relación entre repositorios
+
+### `gentle-ai`
+Sigue siendo el runtime/orquestador.
+
+### `sdd-govplan`
+Debe evolucionar a repo maestro de esta capa de gobierno y flujo, absorbiendo la versión consolidada de este trabajo.
+
+### `agent-core-v3`
+Debe recibir desde aquí únicamente las piezas **reutilizables y distribuibles**:
+- skills globales;
+- templates base;
+- assets de soporte;
+- documentación de instalación/global usage.
+
+### Este repo (`agentcore_publish`)
+Sirve como:
+- laboratorio de consolidación;
+- fuente local de prueba;
+- base para decidir qué exportar a `agent-core-v3`;
+- base para rehacer `sdd-govplan` como archivo maestro.
 
 ## Briefs disponibles
 
@@ -172,3 +229,11 @@ El sistema anterior se mantiene como respaldo externo.
 2. Luego leer `ai/governance/00-start-here.md`.
 3. Usar el brief como gate de entrada antes de PRD/spec/tareas.
 4. Tratar el respaldo histórico como referencia, no como flujo activo.
+
+## Siguiente objetivo natural
+
+La siguiente evolución profesional es:
+
+1. consolidar esta capa como base maestra en `sdd-govplan`;
+2. exportar desde aquí el core reusable a `agent-core-v3`;
+3. mantener `/ai` como overlay local para proyectos reales.

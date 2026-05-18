@@ -2,6 +2,14 @@
 
 Capas portables de guía, memoria fallback, skills, agentes simples y templates para trabajar con `gentle-ai` sin modificar su núcleo.
 
+## Strategic role
+
+`/ai` es la capa local que completa lo que quedó inconcluso en la transición:
+
+- `sdd-govplan` cubrió la parte inicial de governance;
+- `agent-core-v3` cubrió la parte global/distribuible;
+- `/ai` cubre el flujo local completo y contextual del proyecto.
+
 ## Start here
 
 1. `governance/00-start-here.md`
@@ -43,5 +51,13 @@ Luego, según el caso:
 ## Notes
 
 - `gentle-ai` sigue siendo el orquestador.
+- `sdd-govplan` debe evolucionar como repo maestro de esta capa de gobernanza.
+- `agent-core-v3` representa la capa reusable global.
 - `/ai` no reemplaza la orquestación; aporta gobierno, estructura y continuidad.
-- Si necesitas referencia histórica, usa `/legacy`.
+
+## Publishing direction
+
+Desde este directorio deben salir dos cosas distintas:
+
+1. **hacia `sdd-govplan`** → la versión maestra e integral del sistema de gobernanza;
+2. **hacia `agent-core-v3`** → solo el core reusable/installable.
