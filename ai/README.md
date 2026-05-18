@@ -43,5 +43,11 @@ Luego, según el caso:
 ## Notes
 
 - `gentle-ai` sigue siendo el orquestador.
+- `agent-core-v3` representa la capa reusable global.
 - `/ai` no reemplaza la orquestación; aporta gobierno, estructura y continuidad.
 - Si necesitas referencia histórica, usa `/legacy`.
+
+## Boundary note
+
+Este directorio `/ai` funciona como overlay local del proyecto.
+No intenta reemplazar a `agent-core-v3`, sino completar lo que debe seguir siendo contextual, operativo y específico del repo.
