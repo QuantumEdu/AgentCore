@@ -1,7 +1,7 @@
 {
   "name": "agentcore-overlay",
-  "version": "0.1.0",
-  "description": "Portable /ai overlay and AGENTS.md scaffold for gentle-ai workflows.",
+  "version": "0.2.0",
+  "description": "Portable /ai overlay and AGENTS.md scaffold for gentle-ai workflows — governance, skills, templates, and context.",
   "bin": {
     "agentcore-overlay": "bin/agentcore-overlay.js"
   },
@@ -15,5 +15,17 @@
   "license": "MIT",
   "engines": {
     "node": ">=16"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuantumEdu/AgentCore.git"
+  },
+  "keywords": [
+    "gentle-ai",
+    "ai",
+    "overlay",
+    "governance",
+    "scaffold",
+    "workflow"
+  ]
 }
