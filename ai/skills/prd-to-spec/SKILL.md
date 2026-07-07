@@ -1,6 +1,6 @@
 ---
-name: prd-to-spec
-description: Convierte un PRD en una spec operativa y verificable, separando requisitos, escenarios, restricciones, decisiones pendientes y criterios de aceptación.
+name: sdd-govp:prd-to-spec
+description: "Trigger: sdd-govp:prd-to-spec or /prd-to-spec. Convierte un PRD en una spec operativa y verificable, separando requisitos, escenarios, restricciones, decisiones pendientes y criterios de aceptación."
 ---
 
 # PRD to Spec

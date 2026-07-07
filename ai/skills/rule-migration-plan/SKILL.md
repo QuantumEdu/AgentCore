@@ -1,6 +1,6 @@
 ---
-name: rule-migration-plan
-description: Diseña una migración segura para reemplazar reglas o flujos en sistemas ya operativos, usando shadow mode, rollout gradual, fallback y rollback explícito.
+name: sdd-govp:rule-migration-plan
+description: "Trigger: sdd-govp:rule-migration-plan or /rule-migration-plan. Diseña una migración segura para reemplazar reglas o flujos en sistemas ya operativos, usando shadow mode, rollout gradual, fallback y rollback explícito."
 ---
 
 # Rule Migration Plan
@@ -97,10 +97,10 @@ Reemplazar reglas o flujos existentes sin romper operación, contratos ni compor
 
 ## Related skills
 
-- `change-review`
-- `local-retrospective`
-- `improvement-loop`
-- `project-memory-fallback`
+- `sdd-govp:change-review`
+- `sdd-govp:local-retrospective`
+- `sdd-govp:improvement-loop`
+- `sdd-govp:project-memory-fallback`
 
 ## Recommended template
 

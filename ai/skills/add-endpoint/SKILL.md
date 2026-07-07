@@ -1,6 +1,6 @@
 ---
-name: add-endpoint
-description: Guía la adición segura de un endpoint nuevo sin sobreasumir stack, cubriendo contrato, validación, reglas, pruebas y documentación mínima.
+name: sdd-govp:add-endpoint
+description: "Trigger: sdd-govp:add-endpoint or /add-endpoint. Guía la adición segura de un endpoint nuevo sin sobreasumir stack, cubriendo contrato, validación, reglas, pruebas y documentación mínima."
 ---
 
 # Add Endpoint

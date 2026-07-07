@@ -31,14 +31,14 @@ Contexto histórico:
 
 ## Canonical flow
 
-`brief-inception` → `brief-to-prd` → `prd-to-spec` → `spec-to-tasks`
+`sdd-govp:brief-inception` → `sdd-govp:brief-to-prd` → `sdd-govp:prd-to-spec` → `sdd-govp:spec-to-tasks`
 
 Luego, según el caso:
 
-- review → `change-review`
-- migration → `rule-migration-plan`
-- repeated errors → `improvement-loop`
-- no Engram → `project-memory-fallback`
+- review → `sdd-govp:change-review`
+- migration → `sdd-govp:rule-migration-plan`
+- repeated errors → `sdd-govp:improvement-loop`
+- no Engram → `sdd-govp:project-memory-fallback`
 
 ## Key governance docs
 

@@ -1,6 +1,6 @@
 ---
-name: coding-conventions
-description: Resume prácticas de arquitectura, API, seguridad y testing en forma agnóstica para usarlas como base de implementación o revisión.
+name: sdd-govp:coding-conventions
+description: "Trigger: sdd-govp:coding-conventions or /coding-conventions. Resume prácticas de arquitectura, API, seguridad y testing en forma agnóstica para usarlas como base de implementación o revisión."
 ---
 
 # Coding Conventions

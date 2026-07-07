@@ -1,6 +1,6 @@
 ---
-name: brief-to-prd
-description: Convierte un brief canónico o parcial en un PRD corto, claro y profesional. Detecta vacíos críticos, pide solo lo faltante y entrega decisiones iniciales, riesgos y siguiente paso recomendado.
+name: sdd-govp:brief-to-prd
+description: "Trigger: sdd-govp:brief-to-prd or /brief-to-prd. Convierte un brief canónico o parcial en un PRD corto, claro y profesional. Detecta vacíos críticos, pide solo lo faltante y entrega decisiones iniciales, riesgos y siguiente paso recomendado."
 ---
 
 # Brief to PRD

@@ -1,0 +1,173 @@
+# Thesis / Academic Research — Workflow Template
+# Formato APA 7ma edición
+type: thesis
+description: "Investigación académica con formato APA. 8 fases: problema → objetivos → justificación → marco teórico → metodología → análisis → redacción → referencias"
+
+phases:
+  - id: "001"
+    name: "Determinación del Problema"
+    slug: "determinacion-problema"
+    description: >
+      Definir el problema de investigación, preguntas de investigación,
+      y contextualizar el tema dentro del campo de estudio.
+    outputs:
+      - "docs/problema.md"
+      - "docs/preguntas-investigacion.md"
+    completion_criteria:
+      - "Problema delimitado en tiempo, espacio y alcance"
+      - "Preguntas de investigación formuladas"
+      - "Contexto del problema descrito"
+    activities:
+      - "Identificar el área temática y el problema central"
+      - "Formular preguntas de investigación"
+      - "Delimitar alcance y límites del estudio"
+      - "Describir el contexto del problema"
+    depends_on: []
+
+  - id: "002"
+    name: "Objetivos de Investigación"
+    slug: "objetivos"
+    description: >
+      Formular objetivo general y objetivos específicos alineados
+      con el problema y las preguntas de investigación.
+    outputs:
+      - "docs/objetivos.md"
+    completion_criteria:
+      - "Objetivo general claramente definido"
+      - "Objetivos específicos medibles y alcanzables"
+      - "Alineación con el problema de investigación"
+    activities:
+      - "Redactar el objetivo general"
+      - "Desglosar en objetivos específicos"
+      - "Verificar coherencia con preguntas de investigación"
+    depends_on: ["001"]
+
+  - id: "003"
+    name: "Justificación"
+    slug: "justificacion"
+    description: >
+      Justificar la investigación desde los ángulos teórico, práctico,
+      metodológico y social. Explicar por qué vale la pena hacer el estudio.
+    outputs:
+      - "docs/justificacion.md"
+    completion_criteria:
+      - "Justificación teórica desarrollada"
+      - "Justificación práctica desarrollada"
+      - "Justificación metodológica desarrollada"
+      - "Justificación social desarrollada"
+    activities:
+      - "Desarrollar la justificación teórica"
+      - "Desarrollar la justificación práctica"
+      - "Desarrollar la justificación metodológica"
+      - "Desarrollar la justificación social"
+    depends_on: ["002"]
+
+  - id: "004"
+    name: "Marco Teórico"
+    slug: "marco-teorico"
+    description: >
+      Investigar y sintetizar las teorías, conceptos y antecedentes
+      relacionados con las variables de estudio. Revisión de literatura.
+    outputs:
+      - "docs/marco-teorico.md"
+      - "docs/antecedentes.md"
+    completion_criteria:
+      - "Teorías relevantes identificadas y explicadas"
+      - "Variables definidas conceptualmente"
+      - "Antecedentes de investigación revisados"
+      - "Mínimo 20 referencias académicas"
+    activities:
+      - "Buscar literatura académica (Google Scholar, Scopus, etc.)"
+      - "Sintetizar teorías principales"
+      - "Definir conceptualmente las variables"
+      - "Revisar antecedentes de investigación"
+      - "Identificar el gap en la literatura"
+    depends_on: ["003"]
+
+  - id: "005"
+    name: "Metodología"
+    slug: "metodologia"
+    description: >
+      Definir el diseño de investigación, población, muestra,
+      instrumentos, procedimientos y plan de análisis de datos.
+    outputs:
+      - "docs/metodologia.md"
+    completion_criteria:
+      - "Enfoque y diseño de investigación definidos"
+      - "Población y muestra determinadas"
+      - "Instrumentos definidos o diseñados"
+      - "Plan de análisis de datos establecido"
+    activities:
+      - "Definir enfoque (cualitativo/cuantitativo/mixto)"
+      - "Diseñar el tipo de investigación"
+      - "Determinar población y muestra"
+      - "Diseñar o seleccionar instrumentos"
+      - "Establecer procedimiento de recolección"
+      - "Planificar análisis de datos"
+    depends_on: ["004"]
+
+  - id: "006"
+    name: "Análisis de Resultados"
+    slug: "analisis"
+    description: >
+      Aplicar los instrumentos, recolectar datos, analizar resultados
+      y presentar hallazgos en relación con los objetivos.
+    outputs:
+      - "docs/resultados.md"
+      - "docs/discusion.md"
+    completion_criteria:
+      - "Datos recolectados según lo planificado"
+      - "Resultados presentados (tablas/gráficos/narrativa)"
+      - "Discusión vinculada a objetivos y marco teórico"
+      - "Hallazgos contrastados con antecedentes"
+    activities:
+      - "Aplicar instrumentos de recolección"
+      - "Procesar y limpiar datos"
+      - "Realizar análisis estadístico o cualitativo"
+      - "Presentar resultados"
+      - "Discutir hallazgos en contexto"
+    depends_on: ["005"]
+
+  - id: "007"
+    name: "Redacción (Formato APA)"
+    slug: "redaccion-apa"
+    description: >
+      Redactar el informe final de investigación siguiendo el formato
+      APA 7ma edición: estructura, citas, referencias y estilo.
+    outputs:
+      - "docs/informe-final.md"
+      - "docs/portada.md"
+    completion_criteria:
+      - "Estructura APA completa (portada, resumen, cuerpo, referencias)"
+      - "Citas y referencias en formato APA 7ma edición"
+      - "Estilo de redacción académico y coherente"
+      - "Resumen y palabras clave incluidos"
+    activities:
+      - "Estructurar el documento según APA 7ma"
+      - "Redactar cada sección del informe"
+      - "Formatear citas y referencias"
+      - "Redactar resumen y keywords"
+      - "Revisar coherencia general"
+    depends_on: ["006"]
+
+  - id: "008"
+    name: "Revisión de Referencias y Bibliografía"
+    slug: "revision-referencias"
+    description: >
+      Verificar todas las referencias citadas, asegurar consistencia
+      APA, eliminar fuentes no citadas, y validar la bibliografía final.
+    outputs:
+      - "docs/referencias.md"
+      - "docs/informe-final-v2.md"
+    completion_criteria:
+      - "Todas las citas tienen su referencia completa"
+      - "Sin referencias no citadas en el texto"
+      - "Formato APA 7ma verificado en cada entrada"
+      - "DOI y URLs verificados y funcionales"
+    activities:
+      - "Cross-check citas vs referencias"
+      - "Verificar formato APA 7ma de cada referencia"
+      - "Validar DOIs y enlaces"
+      - "Corregir errores de formato"
+      - "Generar bibliografía final"
+    depends_on: ["007"]

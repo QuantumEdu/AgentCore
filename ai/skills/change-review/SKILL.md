@@ -1,6 +1,6 @@
 ---
-name: change-review
-description: Revisa un cambio antes de integrarlo, buscando riesgos de ruptura, drift de documentación, impactos operativos y huecos de validación.
+name: sdd-govp:change-review
+description: "Trigger: sdd-govp:change-review or /change-review. Revisa un cambio antes de integrarlo, buscando riesgos de ruptura, drift de documentación, impactos operativos y huecos de validación."
 ---
 
 # Change Review

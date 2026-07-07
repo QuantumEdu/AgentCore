@@ -1,6 +1,6 @@
 ---
-name: brief-inception
-description: Usa el PROJECT-BRIEF-FULL canónico como motor de discovery inicial. Clasifica el proyecto, detecta huecos, hace hasta 7 preguntas críticas y propone el siguiente artefacto correcto sin saltar directo a implementación.
+name: sdd-govp:brief-inception
+description: "Trigger: sdd-govp:brief-inception or /brief-inception. Usa el PROJECT-BRIEF-FULL canónico como motor de discovery inicial. Clasifica el proyecto, detecta huecos, hace hasta 7 preguntas críticas y propone el siguiente artefacto correcto sin saltar directo a implementación."
 ---
 
 # Brief Inception

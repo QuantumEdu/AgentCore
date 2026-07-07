@@ -17,3 +17,6 @@ Thumbs.db
 
 # Local working notes not intended for main repo flow
 agentcore-y-sdd.md
+
+# Generated docs site (build artifact)
+ai-docs-site/

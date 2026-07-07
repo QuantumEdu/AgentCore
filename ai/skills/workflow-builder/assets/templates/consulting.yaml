@@ -1,0 +1,148 @@
+# Management Consulting — Workflow Template
+# Estándares: ISO 27001, Pareto, PDCA, entre otros
+type: consulting
+description: "Consultoría empresarial. 6 fases: diagnóstico → plan de acción → implementación → evaluación → mejora continua → cierre"
+
+phases:
+  - id: "001"
+    name: "Diagnóstico y Análisis"
+    slug: "diagnostico"
+    description: >
+      Evaluar el estado actual de la organización, identificar brechas,
+      aplicar herramientas de diagnóstico (FODA, Pareto, ISO 27001 gap analysis)
+      y documentar hallazgos.
+    outputs:
+      - "docs/diagnostico.md"
+      - "docs/matriz-foda.md"
+      - "docs/analisis-brechas.md"
+    completion_criteria:
+      - "Diagnóstico organizacional completo"
+      - "Matriz FODA elaborada"
+      - "Análisis de brechas documentado"
+      - "Hallazgos priorizados (principio de Pareto)"
+    activities:
+      - "Realizar entrevistas con stakeholders clave"
+      - "Aplicar herramientas de diagnóstico"
+      - "Identificar brechas vs estándar aplicable"
+      - "Priorizar hallazgos por impacto"
+      - "Documentar situación actual"
+    depends_on: []
+
+  - id: "002"
+    name: "Plan de Acción"
+    slug: "plan-accion"
+    description: >
+      Diseñar el plan de intervención con objetivos, actividades,
+      cronograma, responsables, recursos y KPIs. Basado en los hallazgos
+      del diagnóstico.
+    outputs:
+      - "docs/plan-accion.md"
+      - "docs/cronograma.md"
+      - "docs/matriz-responsabilidades.md"
+    completion_criteria:
+      - "Objetivos SMART definidos"
+      - "Cronograma con hitos y fechas"
+      - "Responsables asignados por actividad"
+      - "KPIs definidos para cada objetivo"
+      - "Presupuesto estimado"
+    activities:
+      - "Definir objetivos SMART"
+      - "Diseñar actividades y entregables"
+      - "Crear cronograma detallado"
+      - "Asignar responsables y recursos"
+      - "Definir KPIs de seguimiento"
+    depends_on: ["001"]
+
+  - id: "003"
+    name: "Implementación"
+    slug: "implementacion"
+    description: >
+      Ejecutar el plan de acción, coordinar con el equipo del cliente,
+      gestionar cambios, y documentar el progreso contra el cronograma.
+    outputs:
+      - "docs/bitacora-implementacion.md"
+      - "docs/evidencias.md"
+      - "docs/reportes-avance.md"
+    completion_criteria:
+      - "Actividades del plan ejecutadas según cronograma"
+      - "Evidencias de cada actividad recolectadas"
+      - "Desviaciones documentadas y gestionadas"
+      - "Reportes de avance periódicos generados"
+    activities:
+      - "Coordinar ejecución con equipo del cliente"
+      - "Supervisar avance de actividades"
+      - "Gestionar riesgos y desviaciones"
+      - "Documentar evidencias"
+      - "Generar reportes de avance"
+    depends_on: ["002"]
+
+  - id: "004"
+    name: "Evaluación de Resultados"
+    slug: "evaluacion"
+    description: >
+      Medir resultados contra KPIs, evaluar efectividad de las
+      intervenciones, documentar lecciones aprendidas y comparar
+      situación actual vs línea base del diagnóstico.
+    outputs:
+      - "docs/evaluacion-resultados.md"
+      - "docs/lecciones-aprendidas.md"
+      - "docs/comparativa-pre-post.md"
+    completion_criteria:
+      - "KPIs medidos y analizados"
+      - "Comparativa pre/post intervención documentada"
+      - "Lecciones aprendidas registradas"
+      - "Desviaciones explicadas"
+    activities:
+      - "Medir KPIs definidos en plan de acción"
+      - "Comparar resultados vs línea base"
+      - "Identificar lecciones aprendidas"
+      - "Analizar causas de desviaciones"
+      - "Documentar resultados"
+    depends_on: ["003"]
+
+  - id: "005"
+    name: "Mejora Continua"
+    slug: "mejora-continua"
+    description: >
+      Proponer mejoras basadas en la evaluación, ajustar procesos,
+      actualizar documentación del sistema de gestión, y planificar
+      el siguiente ciclo PDCA.
+    outputs:
+      - "docs/plan-mejora.md"
+      - "docs/procesos-actualizados.md"
+      - "docs/ciclo-pdca-siguiente.md"
+    completion_criteria:
+      - "Oportunidades de mejora identificadas"
+      - "Procesos actualizados según hallazgos"
+      - "Próximo ciclo PDCA planificado"
+      - "Recomendaciones documentadas"
+    activities:
+      - "Identificar oportunidades de mejora"
+      - "Actualizar procesos y procedimientos"
+      - "Diseñar plan de mejora"
+      - "Planificar siguiente ciclo PDCA"
+    depends_on: ["004"]
+
+  - id: "006"
+    name: "Cierre y Entrega"
+    slug: "cierre"
+    description: >
+      Consolidar entregables finales, presentar resultados al cliente,
+      realizar sesión de cierre, entregar documentación completa y
+      formalizar conclusión del proyecto.
+    outputs:
+      - "docs/informe-final-consultoria.md"
+      - "docs/acta-cierre.md"
+      - "docs/recomendaciones-finales.md"
+    completion_criteria:
+      - "Informe final entregado y aprobado"
+      - "Acta de cierre firmada"
+      - "Documentación completa transferida"
+      - "Cliente satisfecho con resultados"
+    activities:
+      - "Consolidar informe final"
+      - "Preparar presentación de cierre"
+      - "Realizar sesión de cierre con stakeholders"
+      - "Transferir documentación"
+      - "Formalizar cierre del proyecto"
+    depends_on: ["005"]

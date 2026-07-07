@@ -1,0 +1,123 @@
+# Career Coaching — Workflow Template
+# Desarrollo profesional: autoevaluación → exploración → plan → ejecución → revisión
+type: career-coaching
+description: "Coaching de carrera profesional. 5 fases: autoevaluación → exploración → plan de carrera → ejecución → revisión."
+
+phases:
+  - id: "001"
+    name: "Autoevaluación Profesional"
+    slug: "autoevaluacion"
+    description: >
+      Evaluar situación profesional actual: habilidades, intereses,
+      valores, logros, brechas, satisfacción laboral y visión de futuro.
+    outputs:
+      - "docs/perfil-profesional.md"
+      - "docs/matriz-habilidades.md"
+      - "docs/vision-futuro.md"
+    completion_criteria:
+      - "Perfil profesional completo documentado"
+      - "Habilidades duras y blandas inventariadas"
+      - "Valores profesionales identificados"
+      - "Visión de futuro a 1, 3 y 5 años definida"
+    activities:
+      - "Realizar inventario de habilidades"
+      - "Identificar valores profesionales"
+      - "Evaluar satisfacción laboral actual"
+      - "Definir visión de futuro"
+      - "Identificar brechas de desarrollo"
+    depends_on: []
+
+  - id: "002"
+    name: "Exploración de Oportunidades"
+    slug: "exploracion"
+    description: >
+      Investigar opciones profesionales: mercado laboral, tendencias,
+      roles objetivo, empresas target, networking y requisitos
+      para alcanzar la visión de futuro.
+    outputs:
+      - "docs/analisis-mercado.md"
+      - "docs/roles-objetivo.md"
+      - "docs/plan-networking.md"
+    completion_criteria:
+      - "Mercado laboral relevante analizado"
+      - "Roles objetivo identificados y priorizados"
+      - "Requisitos para cada rol documentados"
+      - "Plan de networking inicial definido"
+    activities:
+      - "Investigar tendencias del mercado laboral"
+      - "Identificar roles objetivo"
+      - "Analizar requisitos y competencias necesarias"
+      - "Mapear empresas y contactos target"
+      - "Diseñar estrategia de networking"
+    depends_on: ["001"]
+
+  - id: "003"
+    name: "Plan de Carrera"
+    slug: "plan-carrera"
+    description: >
+      Diseñar plan de desarrollo profesional con hitos, cursos,
+      certificaciones, proyectos, y timeline para alcanzar
+      los roles objetivo.
+    outputs:
+      - "docs/plan-carrera.md"
+      - "docs/cronograma-desarrollo.md"
+      - "docs/presupuesto-capacitacion.md"
+    completion_criteria:
+      - "Plan de desarrollo con hitos definidos"
+      - "Cursos y certificaciones identificados"
+      - "Cronograma realista establecido"
+      - "Recursos necesarios presupuestados"
+    activities:
+      - "Definir hitos de carrera"
+      - "Identificar cursos y certificaciones"
+      - "Establecer cronograma de desarrollo"
+      - "Presupuestar inversión en capacitación"
+      - "Definir KPIs de progreso profesional"
+    depends_on: ["002"]
+
+  - id: "004"
+    name: "Ejecución del Plan"
+    slug: "ejecucion"
+    description: >
+      Ejecutar el plan de desarrollo: capacitaciones, networking,
+      aplicaciones, proyectos, y actividades definidas en el plan.
+    outputs:
+      - "docs/bitacora-ejecucion.md"
+      - "docs/logros.md"
+      - "docs/evidencias-profesionales.md"
+    completion_criteria:
+      - "Actividades del plan en ejecución"
+      - "Capacitaciones realizadas según cronograma"
+      - "Networking activo documentado"
+      - "Logros parciales registrados"
+    activities:
+      - "Realizar capacitaciones planificadas"
+      - "Ejecutar plan de networking"
+      - "Postular a oportunidades"
+      - "Documentar logros y evidencias"
+      - "Mantener bitácora de ejecución"
+    depends_on: ["003"]
+
+  - id: "005"
+    name: "Revisión y Ajuste"
+    slug: "revision"
+    description: >
+      Revisar progreso contra plan, ajustar estrategia según
+      resultados, actualizar visión de futuro, y planificar
+      siguiente ciclo de desarrollo.
+    outputs:
+      - "docs/revision-progreso.md"
+      - "docs/plan-ajustado.md"
+      - "docs/proximos-pasos.md"
+    completion_criteria:
+      - "Progreso medido contra KPIs del plan"
+      - "Ajustes realizados según resultados"
+      - "Visión de futuro actualizada"
+      - "Próximo ciclo planificado"
+    activities:
+      - "Medir progreso contra KPIs"
+      - "Analizar desviaciones y ajustar"
+      - "Actualizar visión de futuro"
+      - "Redefinir próximos pasos"
+      - "Documentar lecciones aprendidas"
+    depends_on: ["004"]

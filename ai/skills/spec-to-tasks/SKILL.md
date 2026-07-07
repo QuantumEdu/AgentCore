@@ -1,6 +1,6 @@
 ---
-name: spec-to-tasks
-description: Convierte una spec en tareas pequeñas, dependientes y ejecutables, con orden de implementación, criterios de done y riesgos visibles.
+name: sdd-govp:spec-to-tasks
+description: "Trigger: sdd-govp:spec-to-tasks or /spec-to-tasks. Convierte una spec en tareas pequeñas, dependientes y ejecutables, con orden de implementación, criterios de done y riesgos visibles."
 ---
 
 # Spec to Tasks

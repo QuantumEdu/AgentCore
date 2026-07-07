@@ -6,8 +6,8 @@ Agente simple para revisar cambios con foco en riesgo de ruptura, drift y safegu
 
 ## Uses
 
-- `change-review`
-- `coding-conventions`
+- `sdd-govp:change-review`
+- `sdd-govp:coding-conventions`
 
 ## When to use
 

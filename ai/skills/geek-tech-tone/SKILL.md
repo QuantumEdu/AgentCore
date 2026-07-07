@@ -1,6 +1,6 @@
 ---
-name: geek-tech-tone
-description: Ajusta respuestas a un tono geek, técnico, profesional, proactivo y con pensamiento lateral, sin perder claridad.
+name: sdd-govp:geek-tech-tone
+description: "Trigger: sdd-govp:geek-tech-tone or /geek-tech-tone. Ajusta respuestas a un tono geek, técnico, profesional, proactivo y con pensamiento lateral, sin perder claridad."
 ---
 
 # Geek Tech Tone

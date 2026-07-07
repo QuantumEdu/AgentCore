@@ -1,6 +1,6 @@
 ---
-name: prompt-improver
-description: Mejora prompts cuando el usuario lo pide. Reestructura el contenido con formato profesional, claro y reusable, sin cambiar la intención original.
+name: sdd-govp:prompt-improver
+description: "Trigger: sdd-govp:prompt-improver or /prompt-improver. Mejora prompts cuando el usuario lo pide. Reestructura el contenido con formato profesional, claro y reusable, sin cambiar la intención original."
 ---
 
 # Prompt Improver

@@ -26,4 +26,4 @@ Consulta solo el patrón relevante cuando realmente aporte valor.
 ## Relación con las skills
 
 - Las skills operativas viven en `/ai/skills/*/SKILL.md`.
-- Estos archivos complementan skills como `coding-conventions`, `add-endpoint` o `change-review`, pero no las reemplazan.
+- Estos archivos complementan skills como `sdd-govp:coding-conventions`, `sdd-govp:add-endpoint` o `sdd-govp:change-review`, pero no las reemplazan.

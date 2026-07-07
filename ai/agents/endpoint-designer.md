@@ -6,9 +6,9 @@ Agente simple para aterrizar endpoints nuevos con contrato, validación, pruebas
 
 ## Uses
 
-- `add-endpoint`
-- `change-review`
-- `coding-conventions`
+- `sdd-govp:add-endpoint`
+- `sdd-govp:change-review`
+- `sdd-govp:coding-conventions`
 
 ## When to use
 

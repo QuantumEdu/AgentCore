@@ -1,6 +1,6 @@
 ---
-name: project-stack-decider
-description: Ayuda a decidir el stack y forma de entrega de un proyecto de manera agnóstica, justificando trade-offs y separando decisión actual, supuestos y alternativas descartadas.
+name: sdd-govp:project-stack-decider
+description: "Trigger: sdd-govp:project-stack-decider or /project-stack-decider. Ayuda a decidir el stack y forma de entrega de un proyecto de manera agnóstica, justificando trade-offs y separando decisión actual, supuestos y alternativas descartadas."
 ---
 
 # Project Stack Decider

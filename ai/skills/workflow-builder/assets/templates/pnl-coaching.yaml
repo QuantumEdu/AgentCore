@@ -1,0 +1,123 @@
+# PNL Coaching — Workflow Template
+# Programación Neurolingüística: ejercicios, anclajes, líneas de tiempo, etc.
+type: pnl-coaching
+description: "Coaching en PNL. 5 fases: línea base → objetivos → ejercicios → seguimiento → evaluación"
+
+phases:
+  - id: "001"
+    name: "Establecer Línea Base"
+    slug: "linea-base"
+    description: >
+      Evaluar el estado actual del coachee: creencias limitantes,
+      mapas mentales, canales representacionales predominantes,
+      anclajes existentes y estado presente vs estado deseado.
+    outputs:
+      - "docs/perfil-pnl.md"
+      - "docs/linea-base.md"
+      - "docs/creencias-limitantes.md"
+    completion_criteria:
+      - "Perfil de canales representacionales identificado"
+      - "Creencias limitantes documentadas"
+      - "Estado presente y deseado definidos"
+      - "Línea base de bienestar/desempeño establecida"
+    activities:
+      - "Realizar entrevista inicial de PNL"
+      - "Identificar sistema representacional predominante"
+      - "Detectar creencias limitantes y potenciadoras"
+      - "Definir estado presente y estado deseado"
+      - "Establecer métricas de línea base"
+    depends_on: []
+
+  - id: "002"
+    name: "Definición de Objetivos"
+    slug: "objetivos"
+    description: >
+      Formular objetivos de coaching bien formados (PNL: positivos,
+      específicos, sensoriales, ecológicos, recursos disponibles,
+      tamaño adecuado, inicio y control personal).
+    outputs:
+      - "docs/objetivos-coaching.md"
+      - "docs/contrato-pnl.md"
+    completion_criteria:
+      - "Objetivos bien formados según criterios PNL"
+      - "Objetivos alineados con valores del coachee"
+      - "Check de ecología realizado para cada objetivo"
+      - "Contrato de coaching acordado"
+    activities:
+      - "Aplicar modelo SMART desde PNL"
+      - "Verificar condición de ecología"
+      - "Alinear objetivos con valores"
+      - "Establecer hitos y plazos"
+      - "Firmar acuerdo/contrato de coaching"
+    depends_on: ["001"]
+
+  - id: "003"
+    name: "Ejercicios y Técnicas PNL"
+    slug: "ejercicios"
+    description: >
+      Aplicar ejercicios de PNL según los objetivos: anclajes,
+      submodalidades, swish, línea de tiempo, reencuadre,
+      metáforas, y técnicas específicas por objetivo.
+    outputs:
+      - "docs/bitacora-ejercicios.md"
+      - "docs/tecnicas-aplicadas.md"
+    completion_criteria:
+      - "Ejercicios seleccionados según objetivos"
+      - "Técnicas aplicadas y documentadas"
+      - "Progreso observable post-ejercicio"
+      - "Coachee reporta avances"
+    activities:
+      - "Seleccionar técnica PNL según objetivo"
+      - "Aplicar ejercicio en sesión"
+      - "Documentar resultados inmediatos"
+      - "Asignar práctica entre sesiones"
+      - "Evaluar efectividad de cada técnica"
+    depends_on: ["002"]
+
+  - id: "004"
+    name: "Seguimiento y Ajuste"
+    slug: "seguimiento"
+    description: >
+      Dar seguimiento al progreso entre sesiones, ajustar técnicas
+      según respuesta del coachee, reforzar anclajes positivos y
+      modificar enfoque cuando sea necesario.
+    outputs:
+      - "docs/bitacora-seguimiento.md"
+      - "docs/ajustes.md"
+    completion_criteria:
+      - "Seguimiento documentado entre sesiones"
+      - "Ajustes realizados según progreso"
+      - "Nuevos anclajes consolidados"
+      - "Coachee mantiene compromiso"
+    activities:
+      - "Revisar práctica entre sesiones"
+      - "Ajustar técnicas según respuesta"
+      - "Reforzar anclajes positivos"
+      - "Documentar cambios en el mapa mental"
+      - "Modificar plan si es necesario"
+    depends_on: ["003"]
+
+  - id: "005"
+    name: "Evaluación y Cierre"
+    slug: "evaluacion"
+    description: >
+      Evaluar resultados contra línea base, medir progreso hacia
+      estado deseado, consolidar cambios, planificar mantenimiento
+      y formalizar cierre del proceso de coaching.
+    outputs:
+      - "docs/evaluacion-final.md"
+      - "docs/plan-mantenimiento.md"
+      - "docs/acta-cierre-coaching.md"
+    completion_criteria:
+      - "Comparativa pre/post documentada"
+      - "Creencias limitantes transformadas"
+      - "Estado deseado alcanzado o en progreso"
+      - "Plan de mantenimiento definido"
+      - "Cierre formal del proceso"
+    activities:
+      - "Medir progreso vs línea base"
+      - "Evaluar transformación de creencias"
+      - "Consolidar cambios neurolingüísticos"
+      - "Diseñar plan de mantenimiento"
+      - "Realizar sesión de cierre"
+    depends_on: ["004"]

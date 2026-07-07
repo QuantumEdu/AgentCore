@@ -1,6 +1,6 @@
 ---
-name: improvement-loop
-description: Captura errores repetidos, identifica causa raíz y propone una regla, checklist o ajuste de flujo para evitar que vuelvan a ocurrir.
+name: sdd-govp:improvement-loop
+description: "Trigger: sdd-govp:improvement-loop or /improvement-loop. Captura errores repetidos, identifica causa raíz y propone una regla, checklist o ajuste de flujo para evitar que vuelvan a ocurrir."
 ---
 
 # Improvement Loop

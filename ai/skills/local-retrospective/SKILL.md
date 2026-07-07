@@ -1,6 +1,6 @@
 ---
-name: local-retrospective
-description: Ejecuta una retrospectiva ligera para capturar qué funcionó, qué falló, qué se repitió y qué ajuste conviene incorporar al flujo local.
+name: sdd-govp:local-retrospective
+description: "Trigger: sdd-govp:local-retrospective or /local-retrospective. Ejecuta una retrospectiva ligera para capturar qué funcionó, qué falló, qué se repitió y qué ajuste conviene incorporar al flujo local."
 ---
 
 # Local Retrospective

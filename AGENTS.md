@@ -25,6 +25,19 @@ This repository packages `/ai` plus `AGENTS.md` as a portable overlay for projec
 - **/ai/agents**: optional specialized agents for discovery/inception.
 - **historical backup**: material anterior rescatado fuera del flujo activo.
 
+## Naming Convention
+
+All skills in this overlay use the prefix `sdd-govp:` to keep them organized under a common namespace (inspired by `ospx:` from OpenSpec).
+
+### Examples
+
+- `sdd-govp:brief-inception` — brief → PRD flow
+- `sdd-govp:change-review` — review gate
+- `sdd-govp:rule-migration-plan` — safe rule migration
+- `sdd-govp:workflow-builder` — custom workflows for any project type
+
+Use the prefix when invoking skills (e.g., `sdd-govp:brief-inception`) or via the `/command` alias (e.g., `/brief-inception`).
+
 ## Non-Negotiables
 
 - Do not modify gentle-ai core behavior from this repository.

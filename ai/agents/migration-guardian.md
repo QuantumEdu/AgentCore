@@ -6,9 +6,9 @@ Agente simple para planear migraciones seguras de reglas o flujos en sistemas ya
 
 ## Uses
 
-- `rule-migration-plan`
-- `change-review`
-- `project-memory-fallback` *(si no hay Engram)*
+- `sdd-govp:rule-migration-plan`
+- `sdd-govp:change-review`
+- `sdd-govp:project-memory-fallback` *(si no hay Engram)*
 
 ## When to use
 

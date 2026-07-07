@@ -1,6 +1,6 @@
 ---
-name: project-memory-fallback
-description: Provee una memoria local mínima basada en archivos cuando Engram no está disponible, para registrar decisiones, pitfalls, contexto de trabajo y continuidad del proyecto.
+name: sdd-govp:project-memory-fallback
+description: "Trigger: sdd-govp:project-memory-fallback or /project-memory-fallback. Provee una memoria local mínima basada en archivos cuando Engram no está disponible, para registrar decisiones, pitfalls, contexto de trabajo y continuidad del proyecto."
 ---
 
 # Project Memory Fallback
