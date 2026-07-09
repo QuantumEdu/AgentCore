@@ -2,40 +2,99 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const readline = require('node:readline');
 
 const PACKAGE_NAME = 'agentcore-overlay';
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DEFAULT_ASSETS = ['ai', 'AGENTS.md'];
+
+const AI_TARGETS = {
+  'gentle-ai': {
+    label: 'gentle-ai (default)',
+    dirs: [
+      { src: 'ai', dst: 'ai' },
+    ],
+    files: [
+      { src: 'AGENTS.md', dst: 'AGENTS.md' },
+    ],
+  },
+  opencode: {
+    label: 'opencode',
+    dirs: [
+      { src: 'ai/skills', dst: '.opencode/skills' },
+      { src: 'ai/agents', dst: '.opencode/agents' },
+      { src: 'ai/context', dst: '.opencode/context' },
+      { src: 'ai/templates', dst: '.opencode/templates' },
+      { src: 'ai/schemas', dst: '.opencode/schemas' },
+      { src: 'ai/governance', dst: '.opencode/governance' },
+    ],
+    files: [
+      { src: 'AGENTS.md', dst: 'AGENTS.md' },
+    ],
+  },
+  'claude-code': {
+    label: 'claude-code',
+    dirs: [
+      { src: 'ai', dst: '.claude/ai' },
+    ],
+    files: [
+      { src: 'AGENTS.md', dst: '.claude/AGENTS.md' },
+    ],
+  },
+  codex: {
+    label: 'Amazon Q Developer (codex)',
+    dirs: [
+      { src: 'ai/governance', dst: '.codex/governance' },
+      { src: 'ai/templates', dst: '.codex/templates' },
+      { src: 'ai/context', dst: '.codex/context' },
+    ],
+    files: [
+      { src: 'AGENTS.md', dst: '.codex/AGENTS.md' },
+    ],
+  },
+};
 
 function printHelp() {
   console.log(`Usage:
-  ${PACKAGE_NAME} init [target-directory] [--force] [--dry-run]
-  ${PACKAGE_NAME} --help
+  ${PACKAGE_NAME} init [target-directory] [options]
 
 Scaffolds the reusable AgentCore overlay into a target directory.
 
-What gets copied:
-  - ai/       portable governance, skills, templates, and context
-  - AGENTS.md repo entrypoint that points readers into /ai
-
-Why not copy the other root docs:
-  - README.md, FAQ.md, and CHANGELOG.md stay in the source repo/package as reference docs.
-  - Keeping the scaffold small reduces noise inside the target project.
-
 Options:
-  --force    overwrite existing files and directories
-  --dry-run  show what would be copied without writing files
-  --help     show this help message
+  --ai <tool>  target AI tool (gentle-ai, opencode, claude-code, codex)
+  --force      overwrite existing files and directories
+  --dry-run    show what would be copied without writing files
+  --help       show this help message
 
 Examples:
-  npx ${PACKAGE_NAME} init
-  npx ${PACKAGE_NAME} init my-project
+  ${PACKAGE_NAME} init
+  ${PACKAGE_NAME} init my-project --ai opencode
   ${PACKAGE_NAME} init . --force`);
 }
 
 function fail(message) {
   console.error(`Error: ${message}`);
   process.exitCode = 1;
+}
+
+async function askAI() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    console.log('\nSelect the AI tool to configure:');
+    const entries = Object.entries(AI_TARGETS);
+    entries.forEach(([key, val], i) => {
+      const marker = key === 'gentle-ai' ? ' (default)' : '';
+      console.log(`  ${i + 1}. ${val.label}${marker}`);
+    });
+    rl.question(`\nEnter number [1]: `, (answer) => {
+      rl.close();
+      const idx = parseInt(answer.trim(), 10);
+      if (answer.trim() === '' || idx === 1) return resolve('gentle-ai');
+      const keys = Object.keys(AI_TARGETS);
+      if (idx >= 1 && idx <= keys.length) return resolve(keys[idx - 1]);
+      console.log(`Invalid option, using gentle-ai.`);
+      resolve('gentle-ai');
+    });
+  });
 }
 
 function parseArgs(argv) {
@@ -47,17 +106,19 @@ function parseArgs(argv) {
 
   const force = args.includes('--force');
   const dryRun = args.includes('--dry-run');
+  const aiIdx = args.indexOf('--ai');
+  const ai = aiIdx !== -1 && aiIdx + 1 < args.length ? args[aiIdx + 1] : null;
   const positional = args.filter((arg) => !arg.startsWith('--'));
   const command = positional[0];
   const targetDir = positional[1] || '.';
 
-  return { command, targetDir, force, dryRun };
+  return { command, targetDir, force, dryRun, ai };
 }
 
 function walkConflicts(sourcePath, destinationPath, conflicts) {
-  if (!fs.existsSync(destinationPath)) {
-    return;
-  }
+  if (!fs.existsSync(sourcePath)) return;
+
+  if (!fs.existsSync(destinationPath)) return;
 
   const sourceStat = fs.statSync(sourcePath);
   const destinationStat = fs.statSync(destinationPath);
@@ -81,19 +142,22 @@ function walkConflicts(sourcePath, destinationPath, conflicts) {
   }
 }
 
-function ensureSafeToCopy(targetRoot, force) {
-  if (force) {
-    return;
-  }
+function ensureSafeToCopy(targetRoot, aiTarget, force) {
+  if (force) return;
 
   const conflicts = [];
+  const target = AI_TARGETS[aiTarget];
 
-  for (const asset of DEFAULT_ASSETS) {
+  for (const item of target.dirs) {
     walkConflicts(
-      path.join(ROOT_DIR, asset),
-      path.join(targetRoot, asset),
+      path.join(ROOT_DIR, item.src),
+      path.join(targetRoot, item.dst),
       conflicts
     );
+  }
+  for (const item of target.files) {
+    const dstPath = path.join(targetRoot, item.dst);
+    if (fs.existsSync(dstPath)) conflicts.push(dstPath);
   }
 
   if (conflicts.length > 0) {
@@ -105,41 +169,58 @@ function ensureSafeToCopy(targetRoot, force) {
   }
 }
 
-function copyAsset(sourcePath, destinationPath) {
+function copyAsset(sourcePath, destinationPath, dryRun) {
   const stat = fs.statSync(sourcePath);
 
   if (stat.isDirectory()) {
-    fs.mkdirSync(destinationPath, { recursive: true });
+    if (!dryRun) fs.mkdirSync(destinationPath, { recursive: true });
     for (const entry of fs.readdirSync(sourcePath)) {
-      copyAsset(path.join(sourcePath, entry), path.join(destinationPath, entry));
+      copyAsset(path.join(sourcePath, entry), path.join(destinationPath, entry), dryRun);
     }
     return;
   }
 
-  fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
-  fs.copyFileSync(sourcePath, destinationPath);
+  if (!dryRun) {
+    fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+    fs.copyFileSync(sourcePath, destinationPath);
+  }
 }
 
-function runInit(targetDir, force, dryRun) {
+function runInit(targetDir, force, dryRun, aiTarget) {
   const targetRoot = path.resolve(process.cwd(), targetDir);
-  ensureSafeToCopy(targetRoot, force);
+  const target = AI_TARGETS[aiTarget];
 
-  console.log(`${dryRun ? 'Planned' : 'Scaffolding'} overlay into ${targetRoot}`);
+  ensureSafeToCopy(targetRoot, aiTarget, force);
 
-  for (const asset of DEFAULT_ASSETS) {
-    const sourcePath = path.join(ROOT_DIR, asset);
-    const destinationPath = path.join(targetRoot, asset);
-    console.log(`- ${asset}`);
+  console.log(`\n${dryRun ? 'Planned' : 'Scaffolding'} for ${target.label} into ${targetRoot}\n`);
 
-    if (!dryRun) {
-      copyAsset(sourcePath, destinationPath);
+  for (const item of target.dirs) {
+    const src = path.join(ROOT_DIR, item.src);
+    const dst = path.join(targetRoot, item.dst);
+    if (fs.existsSync(src)) {
+      console.log(`  ${item.src}/  →  ${item.dst}/`);
+      if (!dryRun) copyAsset(src, dst, dryRun);
+    }
+  }
+  for (const item of target.files) {
+    const src = path.join(ROOT_DIR, item.src);
+    const dst = path.join(targetRoot, item.dst);
+    if (fs.existsSync(src)) {
+      console.log(`  ${item.src}    →  ${item.dst}`);
+      if (!dryRun) copyAsset(src, dst, dryRun);
     }
   }
 
-  console.log('Next: open AGENTS.md, then ai/README.md.');
+  const tips = {
+    'gentle-ai': 'Next: open AGENTS.md, then ai/README.md.',
+    opencode: 'Next: open AGENTS.md. Skills are in .opencode/skills/.',
+    'claude-code': 'Next: open .claude/AGENTS.md, then .claude/ai/README.md.',
+    codex: 'Next: open .codex/AGENTS.md for instructions.',
+  };
+  console.log(`\n${tips[aiTarget] || 'Done.'}`);
 }
 
-function main() {
+async function main() {
   const parsed = parseArgs(process.argv);
 
   if (parsed.command === 'help') {
@@ -148,12 +229,20 @@ function main() {
   }
 
   if (parsed.command !== 'init') {
-    fail(`unknown command \"${parsed.command}\". Use --help for usage.`);
+    fail(`unknown command "${parsed.command}". Use --help for usage.`);
+    return;
+  }
+
+  let aiTarget = parsed.ai;
+  if (!aiTarget) {
+    aiTarget = await askAI();
+  } else if (!AI_TARGETS[aiTarget]) {
+    fail(`Unknown AI tool "${aiTarget}". Options: ${Object.keys(AI_TARGETS).join(', ')}`);
     return;
   }
 
   try {
-    runInit(parsed.targetDir, parsed.force, parsed.dryRun);
+    runInit(parsed.targetDir, parsed.force, parsed.dryRun, aiTarget);
   } catch (error) {
     fail(error.message);
   }

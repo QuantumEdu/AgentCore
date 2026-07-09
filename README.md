@@ -32,8 +32,6 @@ npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init
 
 ### En un directorio específico
 
-Cualquiera de los métodos anteriores acepta un directorio destino:
-
 ```bash
 npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init apps/mi-proyecto
 ```
@@ -49,6 +47,27 @@ npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init . 
 ```bash
 npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init sandbox --dry-run
 ```
+
+## Seleccionar AI tool
+
+Por defecto pregunta de forma interactiva qué AI tool configurar. También se puede pasar con `--ai`:
+
+```bash
+# Modo interactivo (pregunta al ejecutar)
+npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init
+
+# O directo con flag
+npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init --ai opencode
+npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init --ai claude-code
+npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init --ai codex
+```
+
+| AI tool | Scaffold destino |
+|---------|-----------------|
+| `gentle-ai` | `ai/` + `AGENTS.md` (raíz del proyecto) |
+| `opencode` | `.opencode/skills/`, `.opencode/agents/`, etc. |
+| `claude-code` | `.claude/ai/` + `.claude/AGENTS.md` |
+| `codex` (Amazon Q) | `.codex/governance/`, `.codex/templates/`, etc. |
 
 > Próximamente: `npx agentcore-overlay init` (cuando el paquete esté publicado en npm).
 
