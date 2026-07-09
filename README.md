@@ -39,6 +39,16 @@ npx agentcore-overlay init sandbox --dry-run
 
 **Qué copia**: `ai/` (completo) + `AGENTS.md`. No copia README.md, FAQ.md ni CHANGELOG.md porque son docs del repositorio fuente, no del overlay operativo.
 
+> **Aún no publicado en npm**: mientras tanto, usá directo desde GitHub:
+> ```bash
+> npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init
+> ```
+> O clonando:
+> ```bash
+> git clone https://github.com/QuantumEdu/AgentCore.git
+> node AgentCore/bin/agentcore-overlay.js init .
+> ```
+
 ---
 
 ## Qué es AgentCore Overlay
