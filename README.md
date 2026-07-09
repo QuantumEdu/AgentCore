@@ -1,195 +1,260 @@
 # AgentCore Overlay
 
-Overlay reusable para trabajar con `gentle-ai` usando `/ai` como capa portable de gobierno, flujo y soporte operativo.
+Overlay portable de governance, skills, agents y templates para trabajar con `gentle-ai`.
 
-Este repo ahora se puede usar directamente como paquete Node para instalarlo con `npx` o `npm install -g`, y su objetivo principal es **copiar la capa reusable** dentro de otro proyecto sin tocar el core de `gentle-ai`.
+Un `npx agentcore-overlay init` y tenés toda la estructura operativa dentro de tu proyecto, sin tocar el core del orquestador.
 
-## 1. Qué es este repo
+---
 
-Este repositorio publica una capa de trabajo reusable con:
-
-- `/ai` para governance, workflow, skills, agents, templates y fallback local;
-- `AGENTS.md` como entrypoint operativo del proyecto;
-- documentación pública para entender cómo adoptarlo.
-
-No intenta reemplazar a `gentle-ai`.
-
-- `gentle-ai` orquesta;
-- este repo aporta la capa portable de guía y estructura.
-
-## 2. Por qué siguen apareciendo menciones a `agent-core-v3`
-
-Vas a ver referencias viejas a `agent-core-v3` porque este repo nació como parte de una transición mayor.
-
-En concreto:
-
-1. `sdd-govplan` capturó parte de la capa de governance;
-2. `agent-core-v3` era el destino pensado para la distribución global/npm del core reusable;
-3. este repo consolidó el overlay `/ai` que faltaba ordenar y publicar.
-
-La idea importante HOY no es `agent-core-v3` como mensaje principal.
-La idea importante es esta: **este repo ya sirve por sí mismo como fuente instalable del overlay reusable**.
-
-### 1.1 Naming Convention
-
-All skills in this overlay use the prefix `sdd-govp:` (inspired by `ospx:` from OpenSpec).
-Use the prefix when invoking skills, e.g., `sdd-govp:brief-inception` → `sdd-govp:spec-to-tasks`.
-
-## 3. Instalación
-
-### Con `npx`
+## Instalación rápida
 
 ```bash
 npx agentcore-overlay init
 ```
 
-### Instalación global
+O instalación global:
 
 ```bash
 npm install -g agentcore-overlay
 agentcore-overlay init
 ```
 
-### Instalar en un directorio específico
+En un directorio específico:
 
 ```bash
-npx agentcore-overlay init my-project
+npx agentcore-overlay init apps/mi-proyecto
 ```
 
-### Sobrescribir archivos existentes
-
-Por defecto, el scaffold **no sobreescribe** archivos existentes.
+Sobrescribir archivos existentes (actualizar overlay):
 
 ```bash
-npx agentcore-overlay init my-project --force
+npx agentcore-overlay init . --force
 ```
 
-## 4. Qué copia el comando
-
-El CLI copia solamente lo mínimo reusable para incrustar el sistema en otro proyecto:
-
-1. `ai/`
-2. `AGENTS.md`
-
-No copia `README.md`, `FAQ.md` ni `CHANGELOG.md` al proyecto destino porque son documentación del repositorio fuente, no parte obligatoria del overlay operativo.
-
-## 5. Uso rápido
-
-### Ejemplo A: inicializar en el directorio actual
-
-```bash
-npx agentcore-overlay init
-```
-
-Resultado esperado:
-
-- aparece `./ai`
-- aparece `./AGENTS.md`
-
-### Ejemplo B: inicializar en un proyecto nuevo
-
-```bash
-npx agentcore-overlay init apps/customer-portal
-```
-
-Resultado esperado:
-
-- `apps/customer-portal/ai`
-- `apps/customer-portal/AGENTS.md`
-
-### Ejemplo C: ver qué haría sin escribir archivos
+Ver qué copiaría sin escribir nada:
 
 ```bash
 npx agentcore-overlay init sandbox --dry-run
 ```
 
-### Ejemplo D: actualizar un overlay existente
+**Qué copia**: `ai/` (completo) + `AGENTS.md`. No copia README.md, FAQ.md ni CHANGELOG.md porque son docs del repositorio fuente, no del overlay operativo.
 
-```bash
-agentcore-overlay init . --force
-```
+---
 
-Esto sobrescribe archivos coincidentes del overlay. No elimina archivos viejos que hayan quedado fuera de versiones anteriores.
+## Qué es AgentCore Overlay
 
-## 6. Qué hacer después de `init`
+Es una **capa portable** que se instala dentro de cualquier proyecto para sumar:
 
-Seguí este orden:
+- **Governance**: puertas de entrada, mapas de flujo, quick-start por escenario
+- **Skills**: capacidades operativas reutilizables (15 skills + workflow-builder)
+- **Agents**: especialistas simples que componen skills (4 agents)
+- **Templates**: briefs, ADRs, specs, roadmaps, retrospectivas (10 templates)
+- **Context**: memoria local, decisiones, pitfalls, system-layers
+- **AGENTS.md**: entrypoint operativo del overlay dentro del proyecto
 
-1. leer `AGENTS.md`
-2. leer `ai/README.md`
-3. leer `ai/governance/00-start-here.md`
-4. usar `ai/governance/04-workflow-map.md` si necesitás vista estructural
-5. usar `ai/governance/05-quick-start-by-scenario.md` si necesitás entrada por caso real
+No reemplaza a `gentle-ai`. gentle-ai orquesta; AgentCore Overlay aporta la guía y estructura portable.
 
-### Flujo canónico
+### Naming Convention
+
+Todas las skills usan el prefijo `sdd-govp:` (como `ospx:` en OpenSpec).
 
 ```
 sdd-govp:brief-inception → sdd-govp:brief-to-prd → sdd-govp:prd-to-spec → sdd-govp:spec-to-tasks
 ```
 
-Después, según necesidad:
-- `sdd-govp:change-review` — revisar cambio antes de integrar
-- `sdd-govp:rule-migration-plan` — migración segura de reglas
-- `sdd-govp:improvement-loop` — error repetido o fricción recurrente
-- `sdd-govp:project-memory-fallback` — continuidad sin Engram
-- `sdd-govp:workflow-builder` — proyectos no-software (tesis, consultoría, coaching)
-- `sdd-govp:add-endpoint` — agregar endpoint nuevo
-- `sdd-govp:local-retrospective` — retrospectiva post-cambio
+---
 
-## 7. Estructura
+## Flujo canónico
 
-1. `ai/agents` — agentes simples por rol (change-reviewer, endpoint-designer, migration-guardian, project-inception-architect)
-2. `ai/context` — contexto estable y memoria fallback local (decisions, pitfalls, working-memory, system-layers)
-3. `ai/governance` — gates, quick-start y workflow map
-4. `ai/migration` — material de transición y consolidación histórica
-5. `ai/schemas` — validación estructural mínima
-6. `ai/skills` — capacidades operativas reutilizables (15 skills + workflow-builder con templates)
-7. `ai/templates` — briefs, ADRs, roadmaps y otros formatos (10 templates)
-8. `AGENTS.md` — entrypoint operativo del overlay dentro del proyecto
+El pipeline completo para un proyecto con discovery desde cero:
 
-## 8. Casos de uso concretos
+```
+sdd-govp:brief-inception → sdd-govp:brief-to-prd → sdd-govp:prd-to-spec → sdd-govp:spec-to-tasks
+```
 
-### Proyecto nuevo con discovery antes de implementar
+Cada skill produce el input de la siguiente:
 
-1. iniciar con `agentcore-overlay init`
-2. abrir `AGENTS.md`
-3. usar `PROJECT-BRIEF-LITE` o `PROJECT-BRIEF-FULL`
-4. avanzar por el flujo canónico: `sdd-govp:brief-inception` → `sdd-govp:brief-to-prd` → `sdd-govp:prd-to-spec` → `sdd-govp:spec-to-tasks`
+1. **brief-inception** → brief clasificado con huecos detectados
+2. **brief-to-prd** → PRD corto con decisiones y riesgos
+3. **prd-to-spec** → spec verificable con escenarios y criterios de aceptación
+4. **spec-to-tasks** → tareas ejecutables con dependencias y criterios de done
 
-### Proyecto ya en marcha con cambio sensible
+Después, según el escenario:
 
-1. inicializar el overlay en el repo
-2. entrar por `sdd-govp:change-review`
-3. si hay reemplazo de reglas o configuración, usar `sdd-govp:rule-migration-plan`
+| Necesidad | Skill |
+|-----------|-------|
+| Revisar un cambio antes de integrar | `sdd-govp:change-review` |
+| Migrar reglas sin romper producción | `sdd-govp:rule-migration-plan` |
+| Agregar un endpoint nuevo | `sdd-govp:add-endpoint` |
+| Error repetido o fricción recurrente | `sdd-govp:improvement-loop` |
+| Continuidad sin Engram | `sdd-govp:project-memory-fallback` |
+| Proyecto no-software (tesis, consultoría) | `sdd-govp:workflow-builder` |
+| Retrospectiva post-cambio | `sdd-govp:local-retrospective` |
+| Decidir stack técnico | `sdd-govp:project-stack-decider` |
+| Mejorar prompts | `sdd-govp:prompt-improver` |
+| Tono técnico/geek | `sdd-govp:geek-tech-tone` |
+| Convenciones de código | `sdd-govp:coding-conventions` |
 
-### Proyecto sin Engram disponible
+---
 
-1. inicializar el overlay
-2. usar `sdd-govp:project-memory-fallback`
-3. guardar decisiones y contexto en `ai/context`
+## Catálogo de Skills (16)
+
+| Skill | Descripción |
+|-------|-------------|
+| `sdd-govp:add-endpoint` | Guía la adición segura de un endpoint nuevo: contrato, validación, reglas, pruebas y documentación mínima |
+| `sdd-govp:brief-inception` | Usa PROJECT-BRIEF-FULL como motor de discovery inicial. Clasifica el proyecto, detecta huecos, hace hasta 7 preguntas críticas y propone el siguiente artefacto |
+| `sdd-govp:brief-to-prd` | Convierte un brief canónico o parcial en un PRD corto, claro y profesional con decisiones iniciales y riesgos |
+| `sdd-govp:change-review` | Revisa un cambio antes de integrarlo: riesgos de ruptura, drift de documentación, impactos operativos, huecos de validación |
+| `sdd-govp:coding-conventions` | Resume prácticas de arquitectura, API, seguridad y testing como base de implementación o revisión |
+| `sdd-govp:geek-tech-tone` | Ajusta respuestas a tono geek, técnico, profesional, proactivo y con pensamiento lateral |
+| `sdd-govp:improvement-loop` | Captura errores repetidos, identifica causa raíz y propone regla/checklist/ajuste de flujo |
+| `sdd-govp:local-retrospective` | Retrospectiva ligera: qué funcionó, qué falló, qué se repitió, qué ajustar |
+| `sdd-govp:prd-to-spec` | Convierte un PRD en spec operativa y verificable con requisitos, escenarios y criterios de aceptación |
+| `sdd-govp:project-memory-fallback` | Memoria local mínima basada en archivos cuando Engram no está disponible |
+| `sdd-govp:project-stack-decider` | Ayuda a decidir stack y forma de entrega con trade-offs, supuestos y alternativas descartadas |
+| `sdd-govp:prompt-improver` | Reestructura prompts con formato profesional, claro y reusable sin cambiar la intención original |
+| `sdd-govp:rule-migration-plan` | Diseña migración segura de reglas en sistemas operativos: shadow mode, rollout gradual, rollback |
+| `sdd-govp:spec-to-tasks` | Convierte una spec en tareas pequeñas, dependientes y ejecutables con orden y criterios de done |
+| `sdd-govp:workflow-builder` | Crea workflows custom para cualquier tipo de proyecto no-software (tesis, consultoría, coaching, investigación). Incluye 4 templates predefinidos |
+
+---
+
+## Agentes (4)
+
+| Agente | Skill que compone | Rol |
+|--------|-------------------|-----|
+| `change-reviewer` | `sdd-govp:change-review`, `sdd-govp:coding-conventions` | Revisa cambios con foco en riesgo de ruptura, drift y safeguards faltantes |
+| `endpoint-designer` | `sdd-govp:add-endpoint`, `sdd-govp:change-review`, `sdd-govp:coding-conventions` | Aterriza endpoints nuevos con contrato, validación, pruebas y compatibilidad |
+| `migration-guardian` | `sdd-govp:rule-migration-plan`, `sdd-govp:change-review`, `sdd-govp:project-memory-fallback` | Planea migraciones seguras de reglas o flujos en sistemas operativos |
+| `project-inception-architect` | Ninguna directa — agente de discovery | Toma una idea difusa y la convierte en arranque ordenado con preguntas, criterios y siguiente artefacto |
+
+---
+
+## Estructura completa del overlay
+
+```
+ai/
+├── agents/                  ← Agentes simples por rol (4)
+│   ├── change-reviewer.md
+│   ├── endpoint-designer.md
+│   ├── migration-guardian.md
+│   └── project-inception-architect.md
+├── context/                 ← Contexto estable y memoria fallback local
+│   ├── decisions.md         ←   Decisiones registradas
+│   ├── migration-checklist.md
+│   ├── pitfalls.md          ←   Gotchas y errores conocidos
+│   ├── system-layers.md     ←   Mapa de capas del sistema
+│   └── working-memory.md    ←   Memoria de trabajo activa
+├── governance/              ← Puertas de entrada y mapas de flujo
+│   ├── 00-start-here.md     ←   Punto de entrada
+│   ├── 02-decision-gates.md
+│   ├── 03-aidlc-lite.md
+│   ├── 04-workflow-map.md   ←   Vista estructural por tipo de cambio
+│   └── 05-quick-start-by-scenario.md  ←  Entrada por caso real
+├── migration/               ← Material de transición histórica
+├── schemas/                 ← Validación estructural
+│   └── brief-schema.json
+├── skills/                  ← Capacidades operativas reutilizables (16)
+│   ├── add-endpoint/
+│   ├── brief-inception/
+│   ├── brief-to-prd/
+│   ├── change-review/
+│   ├── coding-conventions/
+│   ├── geek-tech-tone/
+│   ├── improvement-loop/
+│   ├── local-retrospective/
+│   ├── patterns/            ←   Patrones de diseño (no skills ejecutables)
+│   ├── prd-to-spec/
+│   ├── project-memory-fallback/
+│   ├── project-stack-decider/
+│   ├── prompt-improver/
+│   ├── rule-migration-plan/
+│   ├── spec-to-tasks/
+│   └── workflow-builder/    ←   Skill + 4 templates de proyecto
+│       └── assets/templates/
+│           ├── thesis.yaml
+│           ├── consulting.yaml
+│           ├── pnl-coaching.yaml
+│           └── career-coaching.yaml
+└── templates/               ← Formatos para materializar outputs (10)
+    ├── PROJECT-BRIEF-FULL.yaml
+    ├── PROJECT-BRIEF-LITE.yaml
+    ├── change-review-template.md
+    ├── decision-adr-template.md
+    ├── prompt-structures.md
+    ├── retrospective-template.md
+    ├── roadmap-template.md
+    ├── rule-migration-template.md
+    ├── spec-template.md
+    └── tasks-template.md
+```
+
+---
+
+## Casos de uso
+
+### Proyecto nuevo con discovery
+
+```bash
+npx agentcore-overlay init
+# leer AGENTS.md, luego ai/README.md
+# arrancar con brief-inception
+```
+
+`sdd-govp:brief-inception` → `sdd-govp:brief-to-prd` → `sdd-govp:prd-to-spec` → `sdd-govp:spec-to-tasks`
+
+### Cambio sensible en sistema existente
+
+`sdd-govp:change-review` → `sdd-govp:rule-migration-plan` (si reemplaza reglas)
+
+### Agregar endpoint
+
+`sdd-govp:add-endpoint` → `sdd-govp:change-review`
+
+### Error repetitivo
+
+`sdd-govp:improvement-loop` → `sdd-govp:local-retrospective`
+
+### Sin Engram
+
+`sdd-govp:project-memory-fallback` (decisions.md, pitfalls.md, working-memory.md)
 
 ### Proyecto no-software (tesis, consultoría, coaching)
 
-1. inicializar el overlay
-2. ejecutar `sdd-govp:workflow-builder`
-3. elegir template (thesis, consulting, pnl-coaching, career-coaching) o definir flujo custom
-4. ejecutar fases generadas con `/workflow continue`
+```bash
+sdd-govp:workflow-builder
+# elegir template o definir flujo custom
+# ejecutar con /workflow continue
+```
 
-## 9. Límites del paquete
+---
 
-Este paquete NO instala ni modifica `gentle-ai`.
+## Templates disponibles (10)
 
-Solo scaffolda la capa reusable que este repo mantiene en `/ai` y `AGENTS.md`.
+| Template | Uso |
+|----------|-----|
+| `PROJECT-BRIEF-FULL.yaml` | Brief completo para proyectos serios o complejos |
+| `PROJECT-BRIEF-LITE.yaml` | Brief corto para proyectos pequeños o exploratorios |
+| `change-review-template.md` | Estructura para revisión de cambio |
+| `decision-adr-template.md` | Formato ADR para decisiones arquitectónicas |
+| `prompt-structures.md` | Estructuras de prompt reusables |
+| `retrospective-template.md` | Guía para retrospectiva post-cambio |
+| `roadmap-template.md` | Formato de roadmap |
+| `rule-migration-template.md` | Plan de migración de reglas |
+| `spec-template.md` | Template de spec operativa |
+| `tasks-template.md` | Template de breakdown de tareas |
 
-## 10. Desarrollo local de este repo
+---
 
-Para probar el CLI desde este repositorio:
+## Desarrollo local
 
 ```bash
 node bin/agentcore-overlay.js --help
 node bin/agentcore-overlay.js init . --force --dry-run
 ```
 
-## 11. Licencia
+---
 
-Este proyecto se distribuye bajo licencia `MIT`.
+## Licencia
+
+MIT
