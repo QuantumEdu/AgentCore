@@ -8,38 +8,49 @@ Un `npx agentcore-overlay init` y tenés toda la estructura operativa dentro de 
 
 ## Instalación
 
-Actualmente desde GitHub (el paquete npm está próximo a publicarse):
+Actualmente desde GitHub (el paquete npm está próximo a publicarse).
+
+### Por proyecto (recomendado)
+
+```bash
+npm install --save-dev git+https://github.com/QuantumEdu/AgentCore.git
+npx agentcore-overlay init
+```
+
+### Global
+
+```bash
+npm install -g git+https://github.com/QuantumEdu/AgentCore.git
+agentcore-overlay init
+```
+
+### Sin instalar (npx directo)
 
 ```bash
 npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init
 ```
 
-O clonando y ejecutando local:
+### En un directorio específico
 
-```bash
-git clone https://github.com/QuantumEdu/AgentCore.git
-node AgentCore/bin/agentcore-overlay.js init .
-```
-
-En un directorio específico:
+Cualquiera de los métodos anteriores acepta un directorio destino:
 
 ```bash
 npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init apps/mi-proyecto
 ```
 
-Sobrescribir archivos existentes (actualizar overlay):
+### Actualizar overlay existente
 
 ```bash
 npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init . --force
 ```
 
-Ver qué copiaría sin escribir nada:
+### Ver qué copiaría sin escribir
 
 ```bash
 npx -p git+https://github.com/QuantumEdu/AgentCore.git agentcore-overlay init sandbox --dry-run
 ```
 
-> Próximamente: `npx agentcore-overlay init` (cuando el paquete esté en npm).
+> Próximamente: `npx agentcore-overlay init` (cuando el paquete esté publicado en npm).
 
 **Qué copia**: `ai/` (completo) + `AGENTS.md`. No copia README.md, FAQ.md ni CHANGELOG.md porque son docs del repositorio fuente, no del overlay operativo.
 
